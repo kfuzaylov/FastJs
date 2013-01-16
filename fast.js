@@ -1,13 +1,3 @@
-/* Todo:
- * 1. Work with DOM (closest, parents, children, siblings, domready, attr,
-  * wrap, unwrap, append, remove, insertBefore, insertAfter)
- * 2. Events
- * 3. isArray, isObject ...
- * 4. Ajax
- * 5. Write comments for code parts
- *
- * */
-
 (function(window, undefined) {
 	'use strict';
 
