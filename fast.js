@@ -964,13 +964,86 @@
 		return element;
 	};
 
+	f.val = function(element) {
+		// Return value of the first element
+		var elem = element[0],
+		tag = elem.tagName.toLowerCase();
+
+		if(tag === 'input') {
+			return elem.value ? elem.value : '';
+		}
+
+		if(tag === 'select') {
+			var values = [],
+			options = elem.options,
+			single = elem.type == 'select-one',
+			index = options.selectedIndex,
+
+			// Minimize cycle iterations if select is not multiple
+			length = single ? index + 1 : options.length,
+			i = single ? index : 0;
+
+			// Index -1 none options was selected
+			if(index < 0) {
+				return null;
+			}
+
+			for(; i < length; i++) {
+				var option = options[i],
+				parent = option.parentNode;
+
+				// Do not select disabled options and options in disabled optgroup
+				if(option.selected && !option.disabled && (parent && parent.tagName == 'OPTGROUP' && !parent.disabled)) {
+
+					// Return value if select is not multiple
+					if(single) {
+						return option.value;
+					}
+
+					// Return an array if select is multiple
+					values[values.length] = option.value;
+				}
+			}
+			return values;
+		}
+
+		if(tag === 'textarea') {
+			// textContent works much faster then innerHTML
+			return elem.textContent;
+		}
+	},
+
 	f.serialize = function(element) {
-		var length = element.length,
+		var formElements = _find(element[0], 'input, select, textarea'),
+		length = formElements.length,
+		params = [],
 		i = 0;
 
+		// create method with array and join
+		// then with string concat +=
+		// which one is faster
+		// create f.val method to get e.g. selected options   
 		for(; i < length; i++) {
+			var elem = formElements[i];
 
+			// Don't handle element without name
+			if(elem.name) {
+				var val = f.val(elem);
+
+				if(f.isArray(val)) {
+					var c = 0,
+					len = val.length;
+					for(; c < len; c++) {
+						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
+					}
+				}
+				else {
+					params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
+				}
+			}
 		}
+
+		return params.join('&').replace(/%20/g, '+');
 	};
 
 	f.serializeObject = function(element) {
@@ -1127,7 +1200,7 @@
 		async: true
 	};
 
-	//----------- Effect ------------
+	//----------- Effects ------------
 	f.fadeIn = function(element, speed, callback) {
 
 	};
@@ -1144,6 +1217,8 @@
 
 	};
 
+	// Objects duplicate keys wil be replaced with the last
+	// Arrays just concats
 	f.merge = function() {
 		var target = arguments[0],
 		length = arguments.length,
@@ -1183,5 +1258,6 @@
 		throw new Error(msg);
 	};
 
+	// Define global f property
 	window.f = f;
 })(window, undefined);
