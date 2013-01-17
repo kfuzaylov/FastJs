@@ -1019,10 +1019,6 @@
 		params = [],
 		i = 0;
 
-		// create method with array and join
-		// then with string concat +=
-		// which one is faster
-		// create f.val method to get e.g. selected options   
 		for(; i < length; i++) {
 			var elem = formElements[i];
 
