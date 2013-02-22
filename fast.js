@@ -158,6 +158,9 @@
 					else if(type == 'tag' && item.tagName === query) {
 						children[len] = item;
 					}
+					else if(type == 'query' && item === element.querySelector(query)) {
+						children[len] = item;
+					}
 				}
 				else {
 					children[len] = item;
