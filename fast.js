@@ -36,7 +36,7 @@
 		}
 
 		if(selector === document || selector === window) {
-			return selector;
+			return [selector];
 		}
 
 		if(typeof selector === 'function') {
@@ -86,7 +86,7 @@
 				return {type: 'class', query: selector.substr(1)};
 			}
 			else if(_isTag.test(selector)) {
-				return {type: 'tag', query: selector.toUpperCase()};
+				return {type: 'tag', query: selector};
 			}
 			else {
 				return {type: 'query', query: selector};
@@ -115,7 +115,7 @@
 				else if(type == 'class' && new RegExp('( |^)' + query + '( |$)').test(parentNode.className)) {
 					parents[length] = parentNode;
 				}
-				else if(type == 'tag' && parentNode.tagName === query) {
+				else if(type == 'tag' && parentNode.tagName === query.toUpperCase()) {
 					parents[length] = parentNode;
 				}
 
@@ -155,7 +155,7 @@
 					else if(type == 'class' && new RegExp('( |^)' + query + '( |$)').test(item.className)) {
 						children[len] = item;
 					}
-					else if(type == 'tag' && item.tagName === query) {
+					else if(type == 'tag' && item.tagName === query.toUpperCase()) {
 						children[len] = item;
 					}
 					else if(type == 'query' && item === element.querySelector(query)) {
@@ -447,7 +447,7 @@
 
 		for(var i in handlers) {
 			var handler = handlers[i],
-			elements = f.find(parent, handler.selector),
+			elements = _find(parent, _getSelector(handler.selector)),
 			length = elements.length,
 			c = 0;
 
@@ -819,26 +819,32 @@
 	f.find = function(element, selector) {
 		selector = _getSelector(selector);
 		var result = [],
-		length = element.length,
+		length = element.length ? element.length : 1,
 		i = 0;
 
 		for(; i < length; i++) {
-			result = result.concat(_find(element[i], selector));
+			result = result.concat(_find(element[i] || element, selector));
 		}
 		return result;
 	};
 
 	f.html = function(element, html) {
 		var length = element.length,
+		result = '',
 		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
-			// Remove element nodes properties to prevent memory leak
-			_removeData(elem.getElementsByTagName('*'));
-			elem.innerHTML = html;
+			if(html) {
+				// Remove element nodes properties to prevent memory leak
+				_removeData(elem.getElementsByTagName('*'));
+				elem.innerHTML = html;
+			}
+			else {
+				result += elem.innerHTML;
+			}
 		}
-		return element;
+		return html ? element : result;
 	};
 
 	f.text = function(element, text) {
@@ -1076,7 +1082,7 @@
 				}
 			}
 		}
-		return type === 'text' ? params.join('&').replace(/%20/g, '+') : params;
+		return params.join('&').replace(/%20/g, '+');
 	};
 
 	//------------- Events -----------------
@@ -1175,9 +1181,16 @@
 
 	f.evalScript = function(script) {
 		if(script && /\S/.test(script)) {
-			(window.execScript || (function(script) {
-				window.eval.call(window, script);
-			}))(script);
+			// Use try/catch for cases when script like
+			// {key1: 22, key2: 33}
+			try {
+				(window.execScript || (function(script) {
+					window.eval.call(window, script);
+				}))(script);
+			}
+			catch(e) {
+				window.eval('(' + script + ')');
+			}
 		}
 	};
 
@@ -1199,7 +1212,7 @@
 		if(f.isObject(settings.data)) {
 			var params = '';
 			for(var key in settings.data) {
-				params += encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+				params += encodeURIComponent(key) + '=' + encodeURIComponent(settings.data[key]);
 			}
 			settings.data = params;
 		}
@@ -1214,9 +1227,15 @@
 		request.setRequestHeader('Content-Type', settings.contentType ? settings.contentType : f.ajaxSettings.contentType);
 
 		request.onreadystatechange = function() {
-			if(request.readyState == 4 && request.status == 200) {
-				var response = _handleAjaxResponse.call(request, settings.dataType);
-				settings.success(response);
+			var status = request.status;
+			if(request.readyState == 4) {
+				if(status >= 200 && status < 300 || status === 304) {
+					var response = _handleAjaxResponse.call(request, settings.dataType);
+					settings.success(response);
+				}
+				else {
+					settings.error(request);
+				}
 			}
 		};
 
@@ -1226,7 +1245,12 @@
 
 	// Ajax global settings
 	f.ajaxSettings = {
+		url: '',
 		type: 'GET',
+		success: function(data) {},
+		error: function(xhr) {},
+		data: null,
+		datType: 'text',
 		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 		async: true
 	};
