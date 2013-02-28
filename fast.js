@@ -1,3 +1,9 @@
+/*
+* FastJs v1.0
+* http://fastjs.net
+*
+* Author: Kadir Fuzaylov
+*/
 (function(window, undefined) {
 	'use strict';
 
