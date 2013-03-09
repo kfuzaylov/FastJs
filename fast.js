@@ -836,6 +836,12 @@
 		return result;
 	};
 
+	f.create = function(html) {
+		var wrap = document.createElement('div');
+		wrap.innerHTML = html;
+		return makeArray(wrap.childNodes);
+	};
+
 	f.html = function(element, html) {
 		var length = element.length,
 		result = '',
