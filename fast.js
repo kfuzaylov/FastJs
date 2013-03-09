@@ -41,18 +41,20 @@
 			return null;
 		}
 
-		if(selector === document || selector === window) {
-			return [selector];
+		if(typeof selector === 'string') {
+			selector = _getSelector(selector);
+			return _find(document, selector);
 		}
-
-		if(typeof selector === 'function') {
+		else if(typeof selector === 'function') {
 			_domReadyCallbacks[_domReadyCallbacks.length] = selector;
 			return;
 		}
-
-		// Get selector type and query string
-		selector = _getSelector(selector);
-		return _find(document, selector);
+		else if(selector === document || selector === window) {
+			return [selector];
+		}
+		else if(f.isDOM(selector)) {
+			return [selector];
+		}
 	};
 
 	function _triggerReadyCallback() {
@@ -941,7 +943,7 @@
 	};
 
 	f.hasClass = function(element, name) {
-		return (new RegExp('(^| )' + name + '( |$)')).test(element[0].className);
+		return (new RegExp('(^| )' + name + '( |$)')).test((element[0] || element).className);
 	};
 
 	f.toggleClass = function(element, name) {
