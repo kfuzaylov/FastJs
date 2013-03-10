@@ -1,37 +1,37 @@
 /*
-* FastJs v1.0
-* http://fastjs.net
-*
-* Author: Kadir Fuzaylov
-*/
+ * FastJs v1.0
+ * http://fastjs.net
+ *
+ * Author: Kadir Fuzaylov
+ */
 (function(window, undefined) {
 	'use strict';
 
 	// Quick references to window properties
 	var document = window.document,
 
-	userAgent = window.navigator.userAgent,
+		userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
-	_domReady = false,
+		_domReady = false,
 
 	// Callbacks to trigger on DOMContentLoaded event
-	_domReadyCallbacks = [],
+		_domReadyCallbacks = [],
 
 	// Regular expression to match selectors
-	_isClass = /^\.[-\w]+$/i,
-	_isId = /^#[-\w]+$/i,
-	_isTag = /^[a-z0-9]+$/i,
+		_isClass = /^\.[-\w]+$/i,
+		_isId = /^#[-\w]+$/i,
+		_isTag = /^[a-z0-9]+$/i,
 
 	// Type names to create type check methods (f.isArray, f.isFunction...)
-	_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
+		_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
 
 	// Identifier for each event handler
-	_handlerId = 0,
+		_handlerId = 0,
 
 	//Shortcut for prototype methods
-	_slice = Array.prototype.slice,
-	_trim = String.prototype.trim;
+		_slice = Array.prototype.slice,
+		_trim = String.prototype.trim;
 
 	//------------- Privet methods -----------------
 	// Main FastJs f method
@@ -61,7 +61,7 @@
 		if(!_domReady) {
 			_domReady = true;
 			var length = _domReadyCallbacks.length,
-			i = 0;
+				i = 0;
 
 			for(; i < length; i++) {
 				_domReadyCallbacks[i]();
@@ -109,12 +109,12 @@
 		var parents = [];
 		if(selector) {
 			var type = selector.type,
-			query = selector.query;
+				query = selector.query;
 		}
 
 		while(element.parentNode && element.parentNode.nodeType === 1) {
 			var parentNode = element.parentNode,
-			length = parents.length;
+				length = parents.length;
 
 			if(selector) {
 				if(type == 'id' && parentNode.id === query) {
@@ -143,18 +143,18 @@
 	// Get all children or by selector
 	function _getChildren(element, selector) {
 		var children = [],
-		allChildren = element.childNodes,
-		length = allChildren.length,
-		i = 0;
+			allChildren = element.childNodes,
+			length = allChildren.length,
+			i = 0;
 
 		if(selector) {
 			var type = selector.type,
-			query = selector.query;
+				query = selector.query;
 		}
 
 		for(; i < length; i++) {
 			var item = allChildren[i],
-			len = children.length;
+				len = children.length;
 			if(allChildren[i].nodeType === 1) {
 				if(selector) {
 					if(type === 'id' && item.id === query) {
@@ -219,7 +219,7 @@
 			var length = items.length,
 
 			// Create empty array with set length
-			result = new Array(length);
+				result = new Array(length);
 			while(length--) {
 				result[length] = items[length];
 			}
@@ -231,7 +231,7 @@
 	// ot prevent memory leak
 	function _removeData(element) {
 		var length = element.length,
-		i = 0
+			i = 0
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -339,7 +339,7 @@
 
 		if(event.pageX == null && event.clientX != null) {
 			var html = document.documentElement,
-			body = document.body;
+				body = document.body;
 			event.pageX = event.clientX + (html && html.scrollLeft || body && body.scrollLeft || 0) - (html.clientLeft || 0);
 			event.pageY = event.clientY + (html && html.scrollTop || body && body.scrollTop || 0) - (html.clientTop || 0);
 		}
@@ -356,8 +356,8 @@
 		}
 
 		var events = element.events,
-		handlers,
-		id;
+			handlers,
+			id;
 
 		if(!handler && !selector) {
 			if(events[type]) {
@@ -450,14 +450,14 @@
 	function _liveEvent(event) {
 		event = _adjustEvent(event);
 		var parent = this,
-		handlers = this.events.live[event.type],
-		selectedElements = [];
+			handlers = this.events.live[event.type],
+			selectedElements = [];
 
 		for(var i in handlers) {
 			var handler = handlers[i],
-			elements = _find(parent, _getSelector(handler.selector)),
-			length = elements.length,
-			c = 0;
+				elements = _find(parent, _getSelector(handler.selector)),
+				length = elements.length,
+				c = 0;
 
 			for(; c < length; c++) {
 				var element = elements[c];
@@ -546,7 +546,7 @@
 	// "this" in handler references to value
 	f.each = function(object, handler) {
 		var length = object.length,
-		i = 0;
+			i = 0;
 
 		// Check length for undefined
 		// if object is an empty array, then length is a 0
@@ -571,7 +571,7 @@
 	// Wrap with function not to clog the main scope
 	(function() {
 		var length = _objectTypes.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			f.extend('is' + _objectTypes[i], (function() {
@@ -593,8 +593,8 @@
 	f.parents = function(element, selector) {
 		selector = _getSelector(selector);
 		var parents = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			parents = parents.concat(_getParents(element[i], selector));
@@ -610,8 +610,8 @@
 		}
 
 		var length = element.length,
-		closest = [],
-		i = 0;
+			closest = [],
+			i = 0;
 
 		for(; i < length; i++) {
 			closest = closest.concat(_getParents(element[i], selector, true));
@@ -622,8 +622,8 @@
 	f.children = function(element, selector) {
 		selector = _getSelector(selector);
 		var children = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			children = children.concat(_getChildren(element[i], selector));
@@ -634,14 +634,14 @@
 	f.siblings = function(element, selector) {
 		selector = _getSelector(selector);
 		var siblings = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			children = _getChildren(elem.parentNode, selector),
-			len = children.length,
-			c = 0;
+				children = _getChildren(elem.parentNode, selector),
+				len = children.length,
+				c = 0;
 
 			for(; c < len; c++) {
 				// Cut the element from the list
@@ -662,7 +662,7 @@
 
 		if(value) {
 			var length = element.length,
-			i = 0;
+				i = 0;
 
 			for(; i < length; i++) {
 				element[i].setAttribute(name, value);
@@ -680,11 +680,11 @@
 		}
 
 		var length = element.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
+				wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
 			elem.parentNode.insertBefore(wrapElement, elem);
 			wrapElement.appendChild(elem);
 		}
@@ -693,14 +693,14 @@
 
 	f.unwrap = function(element) {
 		var length = element.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			var parent = element[i].parentNode;
 			if(parent.tagName !== 'BODY') {
 				var children = parent.childNodes,
-				len = children.length,
-				c = 0;
+					len = children.length,
+					c = 0;
 
 				for(; c < len; c++) {
 					parent.parentNode.insertBefore(children[0], parent);
@@ -713,17 +713,17 @@
 
 	f.append = function(element, children) {
 		var length = element.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			// Clone children until the last iteration
 			var child = i !== length - 1 ? f.clone(children) : children,
-			elem = element[i],
+				elem = element[i],
 
 			// Make sure this is array
 			// Get error when child is a text node, because it has length property
-			len = f.isArray(child) && child.length,
-			c = 0;
+				len = f.isArray(child) && child.length,
+				c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -739,14 +739,14 @@
 
 	f.insertAfter = function(element, target) {
 		var length = target.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-			len = f.isArray(elem) && elem.length,
-			afterElem = target[i],
-			parent = afterElem.parentNode,
-			c = 0;
+				len = f.isArray(elem) && elem.length,
+				afterElem = target[i],
+				parent = afterElem.parentNode,
+				c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -772,13 +772,13 @@
 
 	f.insertBefore = function(element, target) {
 		var length = target.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-			len = f.isArray(elem) && elem.length,
-			beforeElem = target[i],
-			c = 0;
+				len = f.isArray(elem) && elem.length,
+				beforeElem = target[i],
+				c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -794,7 +794,7 @@
 
 	f.remove = function(element) {
 		var length = element.length,
-		i = 0;
+			i = 0;
 
 		for(; i < length; i++) {
 			var removed = element[i];
@@ -810,8 +810,8 @@
 		var collection = [],
 
 		// Make sure this is array with dom elements
-		length = f.isArray(element) && element.length,
-		i = 0;
+			length = f.isArray(element) && element.length,
+			i = 0;
 
 		if(length) {
 			for(; i < length; i++) {
@@ -827,8 +827,8 @@
 	f.find = function(element, selector) {
 		selector = _getSelector(selector);
 		var result = [],
-		length = element.length ? element.length : 1,
-		i = 0;
+			length = element.length ? element.length : 1,
+			i = 0;
 
 		for(; i < length; i++) {
 			result = result.concat(_find(element[i] || element, selector));
@@ -844,8 +844,8 @@
 
 	f.html = function(element, html) {
 		var length = element.length,
-		result = '',
-		i = 0;
+			result = '',
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -863,8 +863,8 @@
 
 	f.text = function(element, text) {
 		var length = element.length,
-		i = 0,
-		result = '';
+			i = 0,
+			result = '';
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -891,14 +891,14 @@
 	f.offset = function(element) {
 		var box = element[0].getBoundingClientRect(),
 
-		body = document.body,
-		docElem = document.documentElement,
+			body = document.body,
+			docElem = document.documentElement,
 
-		scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
-		scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
+			scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
+			scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
 
-		clientTop = docElem.clientTop || body.clientTop || 0,
-		clientLeft = docElem.clientLeft || body.clientLeft || 0;
+			clientTop = docElem.clientTop || body.clientTop || 0,
+			clientLeft = docElem.clientLeft || body.clientLeft || 0;
 		return {
 			left: box.left + scrollLeft - clientLeft,
 			top: box.top + scrollTop - clientTop
@@ -907,18 +907,18 @@
 
 	f.addClass = function(element, names) {
 		var length = element.length,
-		names = names.split(/\s/),
-		len = names.length,
-		i = 0,
-		c = 0;
+			names = names.split(/\s/),
+			len = names.length,
+			i = 0,
+			c = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			elemClass = elem.className + ' ';
+				elemClass = elem.className + ' ';
 
 			for(; c < len; c++) {
 				var name = names[c],
-				regExp = new RegExp('(^| )' + name + '( | $)');
+					regExp = new RegExp('(^| )' + name + '( | $)');
 				if(!regExp.test(elemClass)) {
 					elemClass += name + ' ';
 				}
@@ -930,14 +930,14 @@
 
 	f.removeClass = function(element, names) {
 		var length = element.length,
-		names = names.split(/\s/),
-		len = names.length,
-		i = 0,
-		c = 0;
+			names = names.split(/\s/),
+			len = names.length,
+			i = 0,
+			c = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			elemClass = elem.className;
+				elemClass = elem.className;
 
 			for(; c < len; c++) {
 				var regExp = new RegExp('(^| )' + names[c] + '( |$)');
@@ -954,12 +954,12 @@
 
 	f.toggleClass = function(element, name) {
 		var length = element.length,
-		regexp = new RegExp('(^| )' + name + '( |$)'),
-		i = 0;
+			regexp = new RegExp('(^| )' + name + '( |$)'),
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			elemClass = elem.className;
+				elemClass = elem.className;
 			if(regexp.test(elemClass)) {
 				elem.className = f.trim(elemClass.replace(regexp, ' '));
 			}
@@ -972,7 +972,7 @@
 
 	f.css = function(element, style, value) {
 		var length = element.length,
-		i = 0;
+			i = 0;
 
 		if(style.indexOf('-') !== -1) {
 			style = style.replace(/^-ms-/, 'ms-').replace(/-([\da-z])/, function(str, match) {
@@ -1009,7 +1009,7 @@
 			else if(elem.currentStyle) {
 				if(style === 'opacity') {
 					var filter = elem.currentStyle && elem.currentStyle.filter || elem.style.filter || '',
-					opacity = filter.toLowerCase().match(/opacity=(\d+)/);
+						opacity = filter.toLowerCase().match(/opacity=(\d+)/);
 					return (opacity && opacity[1] / 100) || 1;
 				}
 				return elem.currentStyle[style];
@@ -1024,7 +1024,7 @@
 	f.val = function(element) {
 		// Return value of the first element
 		var elem = f.isArray(element) && element[0] || element,
-		tag = elem.tagName.toLowerCase();
+			tag = elem.tagName.toLowerCase();
 
 		if(/input|textarea/.test(tag)) {
 			return elem.value;
@@ -1032,13 +1032,13 @@
 
 		if(tag === 'select') {
 			var values = [],
-			options = elem.options,
-			single = elem.type == 'select-one',
-			index = options.selectedIndex,
+				options = elem.options,
+				single = elem.type == 'select-one',
+				index = options.selectedIndex,
 
 			// Minimize cycle iterations if select is not multiple
-			length = single ? index + 1 : options.length,
-			i = single ? index : 0;
+				length = single ? index + 1 : options.length,
+				i = single ? index : 0;
 
 			// Index -1 none options were selected
 			if(index < 0) {
@@ -1047,7 +1047,7 @@
 
 			for(; i < length; i++) {
 				var option = options[i],
-				parent = option.parentNode;
+					parent = option.parentNode;
 
 				// Do not handle disabled options and options in disabled optgroup
 				if(option.selected && !option.disabled && (parent && (!parent.disabled || !parent.tagName === 'OPTGROUP'))) {
@@ -1065,39 +1065,39 @@
 		}
 	},
 
-	f.serialize = function(element) {
-		var inputs = _find(f.isArray(element) ? element[0] : element, _getSelector('input, select, textarea')),
-		length = inputs.length,
-		params =[],
-		i = 0;
+		f.serialize = function(element) {
+			var inputs = _find(f.isArray(element) ? element[0] : element, _getSelector('input, select, textarea')),
+				length = inputs.length,
+				params =[],
+				i = 0;
 
-		for(; i < length; i++) {
-			var elem = inputs[i];
+			for(; i < length; i++) {
+				var elem = inputs[i];
 
-			// Handle only enabled elements with name
-			if(elem.name && !elem.disabled) {
+				// Handle only enabled elements with name
+				if(elem.name && !elem.disabled) {
 
-				// Don't handle unchecked radio/checkbox inputs
-				if(elem.tagName.toLowerCase() === 'input' && /radio|checkbox/.test(elem.type) && !elem.checked) {
-					continue;
-				}
-				var val = f.val(elem);
+					// Don't handle unchecked radio/checkbox inputs
+					if(elem.tagName.toLowerCase() === 'input' && /radio|checkbox/.test(elem.type) && !elem.checked) {
+						continue;
+					}
+					var val = f.val(elem);
 
-				if(f.isArray(val)) {
-					var c = 0,
-					len = val.length;
+					if(f.isArray(val)) {
+						var c = 0,
+							len = val.length;
 
-					for(; c < len; c++) {
-						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
+						for(; c < len; c++) {
+							params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
+						}
+					}
+					else {
+						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
 					}
 				}
-				else {
-					params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
-				}
 			}
-		}
-		return params.join('&').replace(/%20/g, '+');
-	};
+			return params.join('&').replace(/%20/g, '+');
+		};
 
 	//------------- Events -----------------
 	f.on = function(element, selector, type, handler) {
@@ -1109,7 +1109,7 @@
 		}
 
 		var length = element.length,
-		i = 0;
+			i = 0;
 		for(; i < length; i++) {
 			_attachEvent(element[i], selector, type, handler);
 		}
@@ -1128,7 +1128,7 @@
 		}
 
 		var length = element.length,
-		i = 0;
+			i = 0;
 		for(; i < length; i++) {
 			_removeEvent(element[i], selector, type, handler);
 		}
@@ -1290,14 +1290,14 @@
 	// Arrays just being concat
 	f.merge = function() {
 		var target = arguments[0],
-		length = arguments.length,
-		c = 1;
+			length = arguments.length,
+			c = 1;
 
 		for(; c < length; c++) {
 			var element = arguments[c];
 			if(target.length !== undefined) {
 				var len = element.length,
-				i = 0;
+					i = 0;
 				for(; i < len; i++) {
 					target[target.length] = element[i];
 				}
