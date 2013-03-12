@@ -10,28 +10,28 @@
 	// Quick references to window properties
 	var document = window.document,
 
-		userAgent = window.navigator.userAgent,
+	userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
-		_domReady = false,
+	_domReady = false,
 
 	// Callbacks to trigger on DOMContentLoaded event
-		_domReadyCallbacks = [],
+	_domReadyCallbacks = [],
 
 	// Regular expression to match selectors
-		_isClass = /^\.[-\w]+$/i,
-		_isId = /^#[-\w]+$/i,
-		_isTag = /^[a-z0-9]+$/i,
+	_isClass = /^\.[-\w]+$/i,
+	_isId = /^#[-\w]+$/i,
+	_isTag = /^[a-z0-9]+$/i,
 
 	// Type names to create type check methods (f.isArray, f.isFunction...)
-		_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
+	_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
 
 	// Identifier for each event handler
-		_handlerId = 0,
+	_handlerId = 0,
 
 	//Shortcut for prototype methods
-		_slice = Array.prototype.slice,
-		_trim = String.prototype.trim;
+	_slice = Array.prototype.slice,
+	_trim = String.prototype.trim;
 
 	//------------- Privet methods -----------------
 	// Main FastJs f method
@@ -47,7 +47,6 @@
 		}
 		else if(typeof selector === 'function') {
 			_domReadyCallbacks[_domReadyCallbacks.length] = selector;
-			return;
 		}
 		else if(selector === document || selector === window) {
 			return [selector];
@@ -57,11 +56,11 @@
 		}
 	};
 
-	function _triggerReadyCallback() {
+	function _triggerReadyCallback(event) {
 		if(!_domReady) {
 			_domReady = true;
 			var length = _domReadyCallbacks.length,
-				i = 0;
+			i = 0;
 
 			for(; i < length; i++) {
 				_domReadyCallbacks[i]();
@@ -525,6 +524,10 @@
 	if(document.addEventListener) {
 		document.addEventListener('DOMContentLoaded', _triggerReadyCallback, false);
 		window.addEventListener('load', _triggerReadyCallback, false);
+	}
+	else if(document.attachEvent) {
+		document.attachEvent('onDOMContentLoaded', _triggerReadyCallback);
+		window.attachEvent('onload', _triggerReadyCallback);
 	}
 
 	// Current version of FastJs
