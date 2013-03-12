@@ -526,7 +526,7 @@
 		window.addEventListener('load', _triggerReadyCallback, false);
 	}
 	else if(document.attachEvent) {
-		document.attachEvent('onDOMContentLoaded', _triggerReadyCallback);
+		document.attachEvent('onreadystatechange', _triggerReadyCallback);
 		window.attachEvent('onload', _triggerReadyCallback);
 	}
 
