@@ -42,7 +42,6 @@
 		}
 
 		if(typeof selector === 'string') {
-			selector = _getSelector(selector);
 			return _find(document, selector);
 		}
 		else if(typeof selector === 'function') {
@@ -84,45 +83,23 @@
 		return browser;
 	};
 
-	function _getSelector(selector) {
-		if(selector) {
-			if(_isId.test(selector)) {
-				return {type: 'id', query: selector.substr(1)};
-			}
-			else if(_isClass.test(selector)) {
-				return {type: 'class', query: selector.substr(1)};
-			}
-			else if(_isTag.test(selector)) {
-				return {type: 'tag', query: selector};
-			}
-			else {
-				return {type: 'query', query: selector};
-			}
-		}
-		return null;
-	};
-
 	// Method gets all parents or by selector
 	// If closest is true return the first parent by selector
 	function _getParents(element, selector, closest) {
 		var parents = [];
-		if(selector) {
-			var type = selector.type,
-				query = selector.query;
-		}
 
 		while(element.parentNode && element.parentNode.nodeType === 1) {
 			var parentNode = element.parentNode,
-				length = parents.length;
+			length = parents.length;
 
 			if(selector) {
-				if(type == 'id' && parentNode.id === query) {
+				if(_isId.test(selector) && parentNode.id === selector.substr(1)) {
 					parents[length] = parentNode;
 				}
-				else if(type == 'class' && new RegExp('( |^)' + query + '( |$)').test(parentNode.className)) {
+				else if(_isClass.test(selector) && new RegExp('( |^)' + selector.substr(1) + '( |$)').test(parentNode.className)) {
 					parents[length] = parentNode;
 				}
-				else if(type == 'tag' && parentNode.tagName === query.toUpperCase()) {
+				else if(_isTag.test(selector) && parentNode.tagName === selector.toUpperCase()) {
 					parents[length] = parentNode;
 				}
 
@@ -142,30 +119,25 @@
 	// Get all children or by selector
 	function _getChildren(element, selector) {
 		var children = [],
-			allChildren = element.childNodes,
-			length = allChildren.length,
-			i = 0;
-
-		if(selector) {
-			var type = selector.type,
-				query = selector.query;
-		}
+		allChildren = element.childNodes,
+		length = allChildren.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var item = allChildren[i],
-				len = children.length;
+			len = children.length;
 			if(allChildren[i].nodeType === 1) {
 				if(selector) {
-					if(type === 'id' && item.id === query) {
+					if(_isId.test(selector) && item.id === selector.substr(1)) {
 						children[len] = item;
 					}
-					else if(type == 'class' && new RegExp('( |^)' + query + '( |$)').test(item.className)) {
+					else if(_isClass.test(selector) && new RegExp('( |^)' + selector.substr(1) + '( |$)').test(item.className)) {
 						children[len] = item;
 					}
-					else if(type == 'tag' && item.tagName === query.toUpperCase()) {
+					else if(_isTag.test(selector) && item.tagName === selector.toUpperCase()) {
 						children[len] = item;
 					}
-					else if(type == 'query' && item === element.querySelector(query)) {
+					else if(item === element.querySelector(selector)) {
 						children[len] = item;
 					}
 				}
@@ -179,31 +151,35 @@
 
 	function _find(element, selector) {
 		if(selector) {
-			if(selector.type == 'class') {
-				if(document.getElementsByClassName) {
-					return makeArray(element.getElementsByClassName(selector.query));
-				}
-				else if(document.querySelectorAll){
-					return makeArray(element.querySelectorAll('.' + selector.query));
-				}
-			}
-			else if(selector.type == 'tag') {
-				return makeArray(element.getElementsByTagName(selector.query));
-			}
-			else if(selector.type == 'id') {
-
+			var result;
+			if(_isId.test(selector)) {
 				// If element is document use getElementById
 				// This is the fastest way to get element by id
 				if(element === document) {
-					var elem = document.getElementById(selector.query);
+					var elem = document.getElementById(selector.substr(1));
 					return elem ? [elem] : [];
 				}
 				else {
-					return makeArray(element.querySelectorAll('#' + selector.query));
+					result = element.querySelectorAll(selector);
+					return _slice ? _slice.call(result) : makeArray(result);
 				}
 			}
-			else if(selector.type == 'query') {
-				return makeArray(element.querySelectorAll(selector.query));
+			if(_isClass.test(selector)) {
+				if(document.getElementsByClassName) {
+					result = element.getElementsByClassName(selector.substr(1));
+					return _slice ? _slice.call(result) : makeArray(result);
+				}
+				else if(document.querySelectorAll){
+					result = element.querySelectorAll(selector);
+					return _slice ? _slice.call(result) : makeArray(result);
+				}
+			}
+			else if(_isTag.test(selector)) {
+				result = element.getElementsByTagName(selector);
+				return _slice ? _slice.call(result) : makeArray(result);
+			}
+			else {
+				return makeArray(element.querySelectorAll(selector));
 			}
 		}
 		return [];
@@ -211,19 +187,14 @@
 
 	// Use native slice method to make result an array
 	function makeArray(items) {
-		try {
-			return _slice.call(items);
-		}
-		catch(e) {
-			var length = items.length,
+		var length = items.length,
 
-			// Create empty array with set length
-				result = new Array(length);
-			while(length--) {
-				result[length] = items[length];
-			}
-			return result;
+		// Create empty array with set length
+		result = new Array(length);
+		while(length--) {
+			result[length] = items[length];
 		}
+		return result;
 	};
 
 	// Remove element properties before remove or replace them
@@ -454,7 +425,7 @@
 
 		for(var i in handlers) {
 			var handler = handlers[i],
-				elements = _find(parent, _getSelector(handler.selector)),
+				elements = _find(parent, handler.selector),
 				length = elements.length,
 				c = 0;
 
@@ -594,10 +565,9 @@
 	};
 
 	f.parents = function(element, selector) {
-		selector = _getSelector(selector);
 		var parents = [],
-			length = element.length,
-			i = 0;
+		length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			parents = parents.concat(_getParents(element[i], selector));
@@ -606,15 +576,14 @@
 	};
 
 	f.closest = function(element, selector) {
-		selector = _getSelector(selector);
 		// Return if selector '', 0, null or undefined
 		if(!selector) {
 			return [];
 		}
 
 		var length = element.length,
-			closest = [],
-			i = 0;
+		closest = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			closest = closest.concat(_getParents(element[i], selector, true));
@@ -623,10 +592,9 @@
 	};
 
 	f.children = function(element, selector) {
-		selector = _getSelector(selector);
 		var children = [],
-			length = element.length,
-			i = 0;
+		length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			children = children.concat(_getChildren(element[i], selector));
@@ -635,16 +603,15 @@
 	};
 
 	f.siblings = function(element, selector) {
-		selector = _getSelector(selector);
 		var siblings = [],
-			length = element.length,
-			i = 0;
+		length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-				children = _getChildren(elem.parentNode, selector),
-				len = children.length,
-				c = 0;
+			children = _getChildren(elem.parentNode, selector),
+			len = children.length,
+			c = 0;
 
 			for(; c < len; c++) {
 				// Cut the element from the list
@@ -828,10 +795,9 @@
 	};
 
 	f.find = function(element, selector) {
-		selector = _getSelector(selector);
 		var result = [],
-			length = element.length ? element.length : 1,
-			i = 0;
+		length = element.length ? element.length : 1,
+		i = 0;
 
 		for(; i < length; i++) {
 			result = result.concat(_find(element[i] || element, selector));
@@ -1069,10 +1035,10 @@
 	},
 
 		f.serialize = function(element) {
-			var inputs = _find(f.isArray(element) ? element[0] : element, _getSelector('input, select, textarea')),
-				length = inputs.length,
-				params =[],
-				i = 0;
+			var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'),
+			length = inputs.length,
+			params =[],
+			i = 0;
 
 			for(; i < length; i++) {
 				var elem = inputs[i];
