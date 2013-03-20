@@ -876,19 +876,19 @@
 
 	f.addClass = function(element, names) {
 		var length = element.length,
-			names = names.split(/\s/),
-			len = names.length,
-			i = 0,
-			c = 0;
+		names = names.split(/\s/),
+		len = names.length,
+		i = 0,
+		c = 0,
+		name, elem, elemClass;
 
 		for(; i < length; i++) {
-			var elem = element[i],
-				elemClass = elem.className + ' ';
+			elem = element[i];
+			elemClass = ' ' + elem.className + ' ';
 
 			for(; c < len; c++) {
-				var name = names[c],
-					regExp = new RegExp('(^| )' + name + '( | $)');
-				if(!regExp.test(elemClass)) {
+				name = names[c];
+				if(elemClass.indexOf(' ' + name + ' ') < 0) {
 					elemClass += name + ' ';
 				}
 			}
