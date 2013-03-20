@@ -10,28 +10,28 @@
 	// Quick references to window properties
 	var document = window.document,
 
-	userAgent = window.navigator.userAgent,
+		userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
-	_domReady = false,
+		_domReady = false,
 
 	// Callbacks to trigger on DOMContentLoaded event
-	_domReadyCallbacks = [],
+		_domReadyCallbacks = [],
 
 	// Regular expression to match selectors
-	_isClass = /^\.[-\w]+$/i,
-	_isId = /^#[-\w]+$/i,
-	_isTag = /^[a-z0-9]+$/i,
+		_isClass = /^\.[-\w]+$/i,
+		_isId = /^#[-\w]+$/i,
+		_isTag = /^[a-z0-9]+$/i,
 
 	// Type names to create type check methods (f.isArray, f.isFunction...)
-	_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
+		_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
 
 	// Identifier for each event handler
-	_handlerId = 0,
+		_handlerId = 0,
 
 	//Shortcut for prototype methods
-	_slice = Array.prototype.slice,
-	_trim = String.prototype.trim;
+		_slice = Array.prototype.slice,
+		_trim = String.prototype.trim;
 
 	//------------- Privet methods -----------------
 	// Main FastJs f method
@@ -59,7 +59,7 @@
 		if(!_domReady) {
 			_domReady = true;
 			var length = _domReadyCallbacks.length,
-			i = 0;
+				i = 0;
 
 			for(; i < length; i++) {
 				_domReadyCallbacks[i]();
@@ -90,7 +90,7 @@
 
 		while(element.parentNode && element.parentNode.nodeType === 1) {
 			var parentNode = element.parentNode,
-			length = parents.length;
+				length = parents.length;
 
 			if(selector) {
 				if(_isId.test(selector) && parentNode.id === selector.substr(1)) {
@@ -119,13 +119,13 @@
 	// Get all children or by selector
 	function _getChildren(element, selector) {
 		var children = [],
-		allChildren = element.childNodes,
-		length = allChildren.length,
-		i = 0;
+			allChildren = element.childNodes,
+			length = allChildren.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			var item = allChildren[i],
-			len = children.length;
+				len = children.length;
 			if(allChildren[i].nodeType === 1) {
 				if(selector) {
 					if(_isId.test(selector) && item.id === selector.substr(1)) {
@@ -161,22 +161,22 @@
 				}
 				else {
 					result = element.querySelectorAll(selector);
-					return _slice ? _slice.call(result) : makeArray(result);
+					return makeArray(result);
 				}
 			}
 			if(_isClass.test(selector)) {
 				if(document.getElementsByClassName) {
 					result = element.getElementsByClassName(selector.substr(1));
-					return _slice ? _slice.call(result) : makeArray(result);
+					return makeArray(result);
 				}
 				else if(document.querySelectorAll){
 					result = element.querySelectorAll(selector);
-					return _slice ? _slice.call(result) : makeArray(result);
+					return makeArray(result);
 				}
 			}
 			else if(_isTag.test(selector)) {
 				result = element.getElementsByTagName(selector);
-				return _slice ? _slice.call(result) : makeArray(result);
+				return makeArray(result);
 			}
 			else {
 				return makeArray(element.querySelectorAll(selector));
@@ -187,14 +187,19 @@
 
 	// Use native slice method to make result an array
 	function makeArray(items) {
-		var length = items.length,
-
-		// Create empty array with set length
-		result = new Array(length);
-		while(length--) {
-			result[length] = items[length];
+		try {
+			return _slice.call(items);
 		}
-		return result;
+		catch(e) {
+			var length = items.length,
+
+			// Create empty array with set length
+				result = new Array(length);
+			while(length--) {
+				result[length] = items[length];
+			}
+			return result;
+		}
 	};
 
 	// Remove element properties before remove or replace them
@@ -566,8 +571,8 @@
 
 	f.parents = function(element, selector) {
 		var parents = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			parents = parents.concat(_getParents(element[i], selector));
@@ -582,8 +587,8 @@
 		}
 
 		var length = element.length,
-		closest = [],
-		i = 0;
+			closest = [],
+			i = 0;
 
 		for(; i < length; i++) {
 			closest = closest.concat(_getParents(element[i], selector, true));
@@ -593,8 +598,8 @@
 
 	f.children = function(element, selector) {
 		var children = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			children = children.concat(_getChildren(element[i], selector));
@@ -604,14 +609,14 @@
 
 	f.siblings = function(element, selector) {
 		var siblings = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			children = _getChildren(elem.parentNode, selector),
-			len = children.length,
-			c = 0;
+				children = _getChildren(elem.parentNode, selector),
+				len = children.length,
+				c = 0;
 
 			for(; c < len; c++) {
 				// Cut the element from the list
@@ -796,8 +801,8 @@
 
 	f.find = function(element, selector) {
 		var result = [],
-		length = element.length ? element.length : 1,
-		i = 0;
+			length = element.length ? element.length : 1,
+			i = 0;
 
 		for(; i < length; i++) {
 			result = result.concat(_find(element[i] || element, selector));
@@ -876,11 +881,11 @@
 
 	f.addClass = function(element, names) {
 		var length = element.length,
-		names = names.split(/\s/),
-		len = names.length,
-		i = 0,
-		c = 0,
-		name, elem, elemClass;
+			names = names.split(/\s/),
+			len = names.length,
+			i = 0,
+			c = 0,
+			name, elem, elemClass;
 
 		for(; i < length; i++) {
 			elem = element[i];
@@ -1036,9 +1041,9 @@
 
 		f.serialize = function(element) {
 			var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'),
-			length = inputs.length,
-			params =[],
-			i = 0;
+				length = inputs.length,
+				params =[],
+				i = 0;
 
 			for(; i < length; i++) {
 				var elem = inputs[i];
