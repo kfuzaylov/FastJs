@@ -165,13 +165,13 @@
 				}
 			}
 			if(_isClass.test(selector)) {
+				// Don't use makeArray method, because if getElementsByClassName
+				// is not supported we work with IE8
 				if(document.getElementsByClassName) {
-					result = element.getElementsByClassName(selector.substr(1));
-					return makeArray(result);
+					return _slice.call(element.getElementsByClassName(selector.substr(1)));
 				}
-				else if(document.querySelectorAll){
-					result = element.querySelectorAll(selector);
-					return makeArray(result);
+				else {
+					return element.querySelectorAll(selector);
 				}
 			}
 			else if(_isTag.test(selector)) {
@@ -191,14 +191,8 @@
 			return _slice.call(items);
 		}
 		catch(e) {
-			var length = items.length,
-
-			// Create empty array with set length
-				result = new Array(length);
-			while(length--) {
-				result[length] = items[length];
-			}
-			return result;
+			// Return NodeList if slice is not supporter. For old browsers
+			return items;
 		}
 	};
 
