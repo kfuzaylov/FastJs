@@ -94,7 +94,7 @@
                 if(_isId.test(selector) && parentNode.id === selector.substr(1)) {
                     parents[length] = parentNode;
                 }
-				else if(_isClass.test(selector) && new RegExp('( |^)' + selector.substr(1) + '( |$)').test(parentNode.className)) {
+				else if(_isClass.test(selector) && (' ' + parentNode.className + ' ').indexOf(' ' + selector.substr(1) + ' ') !== -1) {
                     parents[length] = parentNode;
                 }
 				else if(_isTag.test(selector) && parentNode.tagName === selector.toUpperCase()) {
@@ -124,7 +124,7 @@
                     if(_isId.test(selector) && item.id === selector.substr(1)) {
                         children[len] = item;
                     }
-					else if(_isClass.test(selector) && new RegExp('( |^)' + selector.substr(1) + '( |$)').test(item.className)) {
+					else if(_isClass.test(selector) && (' ' + item.className + ' ').indexOf(' ' + selector.substr(1 + ' ') !== -1) {
                         children[len] = item;
                     }
 					else if(_isTag.test(selector) && item.tagName === selector.toUpperCase()) {
@@ -868,16 +868,19 @@
     };
 
     f.hasClass = function(element, name) {
-        return (new RegExp('(^| )' + name + '( |$)')).test((element[0] || element).className);
+		return (' ' + (element[0] || element).className + ' ').indexOf(' ' + name + ' ') < 0;
     };
 
     f.toggleClass = function(element, name) {
-        var length = element.length, regexp = new RegExp('(^| )' + name + '( |$)'), i = 0;
+        var length = element.length, i = 0;
 
         for(; i < length; i++) {
-            var elem = element[i], elemClass = elem.className;
-            if(regexp.test(elemClass)) {
-                elem.className = f.trim(elemClass.replace(regexp, ' '));
+            var elem = element[i],
+				elemClass = ' ' + elem.className + ' ',
+				name = ' ' + name + ' ';
+
+			if(elemClass.indexOf(name) !== -1) {
+                elem.className = f.trim(elemClass.replace(name, ' '));
             }
 			else {
                 elem.className += ' ' + name;
@@ -937,9 +940,10 @@
 
     f.val = function(element) {
         // Return value of the first element
-        var elem = f.isArray(element) && element[0] || element, tag = elem.tagName.toLowerCase();
+        var elem = f.isArray(element) && element[0] || element,
+			tag = elem.tagName.toLowerCase();
 
-        if(/input|textarea/.test(tag)) {
+        if(tag === 'input' || tag === 'textarea') {
             return elem.value;
         }
 
@@ -983,7 +987,7 @@
 			if(elem.name && !elem.disabled) {
 
 				// Don't handle unchecked radio/checkbox inputs
-				if(elem.tagName.toLowerCase() === 'input' && /radio|checkbox/.test(elem.type) && !elem.checked) {
+				if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
 					continue;
 				}
 				var val = f.val(elem);
