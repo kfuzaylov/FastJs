@@ -10,25 +10,28 @@
     // Quick references to window properties
     var document = window.document,
 
-        userAgent = window.navigator.userAgent,
+	userAgent = window.navigator.userAgent,
 
     // Flag not to run dom ready callbacks twice
-        _domReady = false,
+	_domReady = false,
 
     // Callbacks to trigger on DOMContentLoaded event
-        _domReadyCallbacks = [],
+	_domReadyCallbacks = [],
 
     // Regular expression to match selectors
-        _isClass = /^\.[-\w]+$/i, _isId = /^#[-\w]+$/i, _isTag = /^[a-z0-9]+$/i,
+	_isClass = /^\.[-\w]+$/i,
+	_isId = /^#[-\w]+$/i,
+	_isTag = /^[a-z0-9]+$/i,
 
     // Type names to create type check methods (f.isArray, f.isFunction...)
-        _objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
+	_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
 
     // Identifier for each event handler
-        _handlerId = 0,
+	_handlerId = 0,
 
     //Shortcut for prototype methods
-        _slice = Array.prototype.slice, _trim = String.prototype.trim;
+	_slice = Array.prototype.slice,
+	_trim = String.prototype.trim;
 
     //------------- Privet methods -----------------
     // Main FastJs f method
@@ -234,7 +237,8 @@
         if(selector) {
             handler.selector = selector;
             element.events.live[type][handler.handlerId] = handler;
-        } else {
+        }
+		else {
             element.events[type][handler.handlerId] = handler;
         }
     };
@@ -342,7 +346,8 @@
 
         if(element.removeEventListener) {
             element.removeEventListener(type, (selector ? element.liveHandler : element.handle), false);
-        } else if(element.detachEvent) {
+        }
+		else if(element.detachEvent) {
             element.detachEvent('on' + type, (selector ? element.liveHandler : element.handle));
         }
 
@@ -379,7 +384,8 @@
             delete element.handle;
             delete element.events;
             delete element.liveHandler;
-        } catch(e) {
+        }
+		catch(e) {
             element.removeAttribute('handle');
             element.removeAttribute('events');
             element.removeAttribute('liveHandler');
@@ -490,7 +496,8 @@
                     break;
                 }
             }
-        } else {
+        }
+		else {
             for(i in object) {
                 if(handler.call(object[i], i, object[i]) === false) {
                     break;
@@ -546,7 +553,8 @@
     };
 
     f.children = function(element, selector) {
-        var children = [], length = element.length, i = 0;
+        var children = [],
+			length = element.length, i = 0;
 
         for(; i < length; i++) {
             children = children.concat(_getChildren(element[i], selector));
@@ -558,7 +566,9 @@
         var siblings = [], length = element.length, i = 0;
 
         for(; i < length; i++) {
-            var elem = element[i], children = _getChildren(elem.parentNode, selector), len = children.length, c = 0;
+            var elem = element[i],
+				children = _getChildren(elem.parentNode, selector),
+				len = children.length, c = 0;
 
             for(; c < len; c++) {
                 // Cut the element from the list
@@ -597,8 +607,10 @@
         var length = element.length, i = 0;
 
         for(; i < length; i++) {
-            var elem = element[i], wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
-            elem.parentNode.insertBefore(wrapElement, elem);
+            var elem = element[i],
+				wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
+
+			elem.parentNode.insertBefore(wrapElement, elem);
             wrapElement.appendChild(elem);
         }
         return element;
@@ -647,7 +659,10 @@
         var length = target.length, i = 0;
 
         for(; i < length; i++) {
-            var elem = i !== length - 1 ? f.clone(element) : element, len = f.isArray(elem) && elem.length, afterElem = target[i], parent = afterElem.parentNode, c = 0;
+            var elem = i !== length - 1 ? f.clone(element) : element,
+				len = f.isArray(elem) && elem.length,
+				afterElem = target[i],
+				parent = afterElem.parentNode, c = 0;
 
             if(len) {
                 for(; c < len; c++) {
@@ -770,12 +785,14 @@
 
     f.offset = function(element) {
         var box = element[0].getBoundingClientRect(),
+            body = document.body,
+			docElem = document.documentElement,
 
-            body = document.body, docElem = document.documentElement,
+			scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
+			scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
 
-            scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop, scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
-
-            clientTop = docElem.clientTop || body.clientTop || 0, clientLeft = docElem.clientLeft || body.clientLeft || 0;
+			clientTop = docElem.clientTop || body.clientTop || 0,
+			clientLeft = docElem.clientLeft || body.clientLeft || 0;
         return {
             left: box.left + scrollLeft - clientLeft,
             top: box.top + scrollTop - clientTop
@@ -783,7 +800,10 @@
     };
 
     f.addClass = function(element, names) {
-        var length = element.length, names = names.split(/\s/), len = names.length, i = 0, c = 0, name, elem, elemClass;
+        var length = element.length,
+			names = names.split(/\s/),
+			len = names.length,
+			i = 0, c = 0, name, elem, elemClass;
 
         for(; i < length; i++) {
             elem = element[i];
@@ -915,34 +935,34 @@
         }
     },
 
-        f.serialize = function(element) {
-            var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
+	f.serialize = function(element) {
+		var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
 
-            for(; i < length; i++) {
-                var elem = inputs[i];
+		for(; i < length; i++) {
+			var elem = inputs[i];
 
-                // Handle only enabled elements with name
-                if(elem.name && !elem.disabled) {
+			// Handle only enabled elements with name
+			if(elem.name && !elem.disabled) {
 
-                    // Don't handle unchecked radio/checkbox inputs
-                    if(elem.tagName.toLowerCase() === 'input' && /radio|checkbox/.test(elem.type) && !elem.checked) {
-                        continue;
-                    }
-                    var val = f.val(elem);
+				// Don't handle unchecked radio/checkbox inputs
+				if(elem.tagName.toLowerCase() === 'input' && /radio|checkbox/.test(elem.type) && !elem.checked) {
+					continue;
+				}
+				var val = f.val(elem);
 
-                    if(f.isArray(val)) {
-                        var c = 0, len = val.length;
+				if(f.isArray(val)) {
+					var c = 0, len = val.length;
 
-                        for(; c < len; c++) {
-                            params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
-                        }
-                    } else {
-                        params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
-                    }
-                }
-            }
-            return params.join('&').replace(/%20/g, '+');
-        };
+					for(; c < len; c++) {
+						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
+					}
+				} else {
+					params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
+				}
+			}
+		}
+		return params.join('&').replace(/%20/g, '+');
+	};
 
     //------------- Events -----------------
     f.on = function(element, selector, type, handler) {
@@ -1105,23 +1125,6 @@
         datType: 'text',
         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         async: true
-    };
-
-    //----------- Effects ------------
-    f.fadeIn = function(element, speed, callback) {
-
-    };
-
-    f.fadeOut = function(element, speed, callback) {
-
-    };
-
-    f.slideUp = function(element, speed, callback) {
-
-    };
-
-    f.slideDown = function(element, speed, callback) {
-
     };
 
     // Objects duplicate keys wil be replaced with the last
