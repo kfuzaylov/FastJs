@@ -124,7 +124,7 @@
                     if(_isId.test(selector) && item.id === selector.substr(1)) {
                         children[len] = item;
                     }
-					else if(_isClass.test(selector) && (' ' + item.className + ' ').indexOf(' ' + selector.substr(1 + ' ') !== -1) {
+					else if(_isClass.test(selector) && (' ' + item.className + ' ').indexOf(' ' + selector.substr(1) + ' ') !== -1) {
                         children[len] = item;
                     }
 					else if(_isTag.test(selector) && item.tagName === selector.toUpperCase()) {
