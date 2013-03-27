@@ -868,7 +868,7 @@
     };
 
     f.hasClass = function(element, name) {
-		return (' ' + (element[0] || element).className + ' ').indexOf(' ' + name + ' ') < 0;
+		return (' ' + (element[0] || element).className + ' ').indexOf(' ' + name + ' ') > -1;
     };
 
     f.toggleClass = function(element, name) {
@@ -876,14 +876,14 @@
 
         for(; i < length; i++) {
             var elem = element[i],
-				elemClass = ' ' + elem.className + ' ',
+				elemClass = ' ' + elem.className + ' ';
 				name = ' ' + name + ' ';
 
-			if(elemClass.indexOf(name) !== -1) {
+			if(elemClass.indexOf(name) > -1) {
                 elem.className = f.trim(elemClass.replace(name, ' '));
             }
 			else {
-                elem.className += ' ' + name;
+                elem.className += ' ' + f.trim(name);
             }
         }
         return element;
