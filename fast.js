@@ -408,10 +408,14 @@
 
     function _liveEvent(event) {
         event = _adjustEvent(event);
-        var parent = this, handlers = this.events.live[event.type], selectedElements = [];
+        var parent = this,
+		handlers = this.events.live[event.type],
+		selectedElements = [];
 
         for(var i in handlers) {
-            var handler = handlers[i], elements = _find(parent, handler.selector), length = elements.length, c = 0;
+            var handler = handlers[i],
+			elements = _find(parent, handler.selector),
+			length = elements.length, c = 0;
 
             for(; c < length; c++) {
                 var element = elements[c];
@@ -789,6 +793,22 @@
         return html ? element : result;
     };
 
+	f.contents = function(element) {
+		var result = [],
+		length = element.length,
+		i = 0;
+
+		for(; i < length; i++) {
+			if(element[i].tagName.toLowerCase() === 'iframe') {
+				result[result.length] = element[i].contentDocument || element[i].contentWindow.document;
+			}
+			else {
+				result = result.concat(makeArray(element[i].childNodes));
+			}
+		}
+		return result;
+	};
+
     f.text = function(element, text) {
         var length = element.length,
 			i = 0, result = '';
@@ -1008,11 +1028,10 @@
 	};
 
     //------------- Events -----------------
-    f.on = function(element, selector, type, handler) {
+    f.on = function(element, type, selector, handler) {
         // Use selector for live event handler
         if(!handler) {
-            handler = type;
-            type = selector;
+            handler = selector;
             selector = undefined;
         }
 
@@ -1040,6 +1059,21 @@
         }
         return element;
     };
+
+	f.trigger = function(element, event) {
+		var length = element.length,
+		elem,
+		i = 0;
+
+		for(; i < length; i++) {
+			elem = element[i];
+			// Trigger events only for
+			if(elem.nodeType === 1 && event) {
+				elem[event]();
+			}
+		}
+		return element;
+	};
 
     //----------- Ajax -------------
     f.isJSON = function(json) {
@@ -1209,6 +1243,36 @@
     f.error = function(msg) {
         throw new Error(msg);
     };
+
+	f.cookie = function(name, value, props) {
+		// Set or delete cookie
+		if(value) {
+			props = props || {};
+			var exp = props.expires
+
+			if(typeof exp === 'number' && exp) {
+				var date = new Date();
+				date.setTime(date.getTime() + exp * 1000);
+				exp = date;
+			}
+
+			if(exp && exp.toUTCString) {
+				props.expires = exp.toUTCString();
+			}
+
+			var cookies = encodeURIComponent(name) + '=' + encodeURIComponent(value);
+
+			for(var key in props){
+				cookies += '; ' + key + props[key];
+			}
+			document.cookie = cookies;
+		}
+		else {
+			// Get cookie
+			var matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+			return matches ? decodeURIComponent(matches[1]) : undefined
+		}
+	};
 
     // Define global f property
     window.f = f;
