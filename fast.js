@@ -1067,7 +1067,7 @@
 
 		for(; i < length; i++) {
 			elem = element[i];
-			// Trigger events only for
+			// Trigger events only for element nodes
 			if(elem.nodeType === 1 && event) {
 				elem[event]();
 			}
