@@ -1244,9 +1244,9 @@
         throw new Error(msg);
     };
 
-	f.cookie = function(name, value, props) {
+	f.cookie = function(name, value, props, secure) {
 		// Set or delete cookie
-		if(value) {
+		if(typeof value !== 'undefined') {
 			props = props || {};
 			var exp = props.expires
 
@@ -1262,9 +1262,12 @@
 
 			var cookies = encodeURIComponent(name) + '=' + encodeURIComponent(value);
 
-			for(var key in props){
-				cookies += '; ' + key + props[key];
+			for(var key in props) {
+				cookies += '; ' + key + '=' + props[key];
 			}
+
+			cookies += secure ? '; secure' : '';
+			console.log(cookies);
 			document.cookie = cookies;
 		}
 		else {
