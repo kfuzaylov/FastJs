@@ -23,15 +23,18 @@
 		_isId = /^#[-\w]+$/i,
 		_isTag = /^[a-z0-9]+$/i,
 
-	// Type names to create type check methods (f.isArray, f.isFunction...)
-		_objectTypes = ['Array', 'Function', 'Object', 'String', 'Number', 'HTMLCollection'],
+	// Object types to create type check methods
+		_objectTypes = ['Object', 'HTMLCollection', 'Function', 'String', 'Number'],
 
 	// Identifier for each event handler
 		_handlerId = 0,
 
 	//Shortcut for prototype methods
 		_slice = Array.prototype.slice,
-		_trim = String.prototype.trim;
+		_trim = String.prototype.trim,
+		_keys = Object.keys,
+		_isArray = Array.prototype.isArray,
+		_indexOf = Array.prototype.indexOf;
 
 	//------------- Privet methods -----------------
 	// Main FastJs f method
@@ -524,7 +527,8 @@
 	// Handler get two arguments - object key and value
 	// "this" in handler references to value
 	f.each = function(object, handler) {
-		var length = object.length, i = 0;
+		var length = object.length,
+		i = 0;
 
 		// Check length for undefined
 		// if object is an empty array, then length is a 0
@@ -545,7 +549,7 @@
 		return object;
 	};
 
-	// Define isArray, isFunction ... methods
+	// Define isFunction, isObject and etc methods
 	// Wrap with function not to clog the main scope
 	(function() {
 		var length = _objectTypes.length, i = 0;
@@ -554,11 +558,55 @@
 			f.extend('is' + _objectTypes[i], (function() {
 				var type = _objectTypes[i];
 				return function(obj) {
-					return Object.prototype.toString.call(obj) === '[object ' + type + ']';
+					// Use Object.prototype.toString method, because
+					// typeof doesn't fit for these object
+					if(type === 'Object' || type === 'HTMLCollection') {
+						return Object.prototype.toString.call(obj) === '[object ' + type + ']';
+					}
+					else {
+						// Otherwise use typeof, because it much faster
+						return typeof obj === type.toLowerCase();
+					}
 				}
 			})());
 		}
 	})();
+
+	f.isArray = function(arr) {
+		if(typeof _isArray === 'function') {
+			return _isArray.call(arr);
+		}
+		return Object.prototype.toString.call(arr) === '[object Array]';
+	};
+
+	f.inArray = function(value, array, i) {
+		if(typeof _indexOf === 'function') {
+			return _indexOf.call(array, value, i);
+		}
+
+		var length = array.length;
+		i = i ? i < 0 ? Math.max(0, length + i) : i : 0;
+		for(; i < length; i++) {
+			if(i in array && array[i] === value) {
+				return i;
+			}
+		}
+		return -1;
+	};
+
+	f.keys = function(obj) {
+		if(typeof _keys === 'function') {
+			return _keys(obj);
+		}
+
+		var array = [];
+		for(var key in obj) {
+			if(obj.hasOwnProperty(key)) {
+				array[array.length] = key;
+			}
+		}
+		return array;
+	};
 
 	//------------- DOM methods ----------------
 	// Check element for some dom element properties
@@ -1202,7 +1250,8 @@
 				if(status >= 200 && status < 300 || status === 304) {
 					var response = _handleAjaxResponse.call(request, settings.dataType);
 					settings.success(response);
-				} else {
+				}
+				else {
 					settings.error(request);
 				}
 			}
@@ -1249,15 +1298,11 @@
 	};
 
 	f.trim = function(string) {
-		if(!string) {
-			return '';
-		}
-
 		// If available use native trim method
 		if(typeof _trim === 'function') {
 			return _trim.call(string);
 		}
-		return string.toString().replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+		return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 	};
 
 	f.error = function(msg) {
