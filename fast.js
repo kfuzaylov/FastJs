@@ -128,7 +128,8 @@
 				if(closest && parents.length === 1) {
 					return parents;
 				}
-			} else {
+			}
+			else {
 				parents[length] = parentNode;
 			}
 			element = element.parentNode;
@@ -204,7 +205,8 @@
 	function makeArray(items) {
 		try {
 			return _slice.call(items);
-		} catch(e) {
+		}
+		catch(e) {
 			// Return NodeList if slice is not supporter. For old browsers
 			return items;
 		}
@@ -396,7 +398,8 @@
 			if(handler && !selector) {
 				delete events[type];
 			}
-		} else {
+		}
+		else {
 			if(events.live && events.live[type]) {
 				delete events.live[type];
 			}
@@ -459,7 +462,8 @@
 		var xmlhttp;
 		try {
 			xmlhttp = new ActiveXObject('Msxml2.XMLHTTP');
-		} catch(e) {
+		}
+		catch(e) {
 			try {
 				xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
 			} catch(e) {
@@ -504,7 +508,8 @@
 	if(document.addEventListener) {
 		document.addEventListener('DOMContentLoaded', _triggerReadyCallback, false);
 		window.addEventListener('load', _triggerReadyCallback, false);
-	} else if(document.attachEvent) {
+	}
+	else if(document.attachEvent) {
 		document.attachEvent('onreadystatechange', _triggerReadyCallback);
 		window.attachEvent('onload', _triggerReadyCallback);
 	}
@@ -1181,7 +1186,8 @@
 			if(window.DOMParser) {
 				tmp = new DOMParser();
 				xml = tmp.parseFromString(data, 'text/xml');
-			} else {
+			}
+			else {
 				xml = new ActiveXObject('Microsoft.XMLDOM');
 				xml.async = false;
 				xml.loadXML(data);
@@ -1332,7 +1338,6 @@
 			}
 
 			cookies += secure ? '; secure' : '';
-			console.log(cookies);
 			document.cookie = cookies;
 		}
 		else {
