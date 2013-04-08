@@ -34,7 +34,20 @@
 		_trim = String.prototype.trim,
 		_keys = Object.keys,
 		_isArray = Array.prototype.isArray,
-		_indexOf = Array.prototype.indexOf;
+		_indexOf = Array.prototype.indexOf,
+
+	// Local ajax settings
+	// Global ajax settings will overwrite locals
+	_ajaxSettings = {
+		url: '',
+		type: 'GET',
+		success: function(data) {},
+		error: function(xhr) {},
+		data: null,
+		dataType: 'text',
+		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+		async: true
+	};
 
 	//------------- Privet methods -----------------
 	// Main FastJs f method
@@ -1070,35 +1083,35 @@
 		}
 	},
 
-		f.serialize = function(element) {
-			var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
+	f.serialize = function(element) {
+		var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
 
-			for(; i < length; i++) {
-				var elem = inputs[i];
+		for(; i < length; i++) {
+			var elem = inputs[i];
 
-				// Handle only enabled elements with name
-				if(elem.name && !elem.disabled) {
+			// Handle only enabled elements with name
+			if(elem.name && !elem.disabled) {
 
-					// Don't handle unchecked radio/checkbox inputs
-					if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
-						continue;
-					}
-					var val = f.val(elem);
+				// Don't handle unchecked radio/checkbox inputs
+				if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
+					continue;
+				}
+				var val = f.val(elem);
 
-					if(f.isArray(val)) {
-						var c = 0, len = val.length;
+				if(f.isArray(val)) {
+					var c = 0, len = val.length;
 
-						for(; c < len; c++) {
-							params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
-						}
-					}
-					else {
-						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
+					for(; c < len; c++) {
+						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
 					}
 				}
+				else {
+					params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val);
+				}
 			}
-			return params.join('&').replace(/%20/g, '+');
-		};
+		}
+		return params.join('&').replace(/%20/g, '+');
+	};
 
 	//------------- Events -----------------
 	f.on = function(element, type, selector, handler) {
@@ -1219,15 +1232,8 @@
 	};
 
 	f.ajax = function(settings) {
-		// Shift arguments if data argument was omitted
-		if(f.isFunction(settings.data)) {
-			settings.dataType = settings.dataType || settings.success;
-			settings.success = settings.data;
-			settings.data = null;
-		}
-
 		// Make settings an object
-		settings = f.isObject(settings) ? f.merge(f.ajaxSettings, settings) : f.ajaxSettings;
+		settings = f.merge(_ajaxSettings, settings) || _ajaxSettings;
 
 		// Make type upper case
 		settings.type = settings.type.toUpperCase();
@@ -1241,14 +1247,14 @@
 			settings.data = params;
 		}
 
-		if(settings.type == 'GET' && settings.data) {
-			settings.url += (settings.url.indexOf('?') !== -1 ? '&' : '?') + settings.data;
+		if(settings.type === 'GET' && settings.data) {
+			settings.url += (settings.url.indexOf('?') !== -1 ? '&' : '?') + settings.data.replace(/%20/g, '+');
 			settings.data = null;
 		}
 
 		var request = _xmlHttpRequest();
-		request.open(settings.type, settings.url, settings.async ? settings.async : f.ajaxSettings.async);
-		request.setRequestHeader('Content-Type', settings.contentType ? settings.contentType : f.ajaxSettings.contentType);
+		request.open(settings.type, settings.url, settings.async);
+		request.setRequestHeader('Content-Type', settings.contentType);
 
 		request.onreadystatechange = function() {
 			var status = request.status;
@@ -1268,20 +1274,11 @@
 	};
 
 	// Ajax global settings
-	f.ajaxSettings = {
-		url: '',
-		type: 'GET',
-		success: function(data) {
-		},
-		error: function(xhr) {
-		},
-		data: null,
-		datType: 'text',
-		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-		async: true
+	f.ajaxSettings = function(options) {
+		f.merge(_ajaxSettings, options);
 	};
 
-	// Objects duplicate keys wil be replaced with the last
+	// Objects duplicate keys will be replaced with the last ones
 	// Arrays just being concat
 	f.merge = function() {
 		var target = arguments[0], length = arguments.length, c = 1;
