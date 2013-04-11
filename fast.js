@@ -31,10 +31,6 @@
 
 	//Shortcut for prototype methods
 		_slice = Array.prototype.slice,
-		_trim = String.prototype.trim,
-		_keys = Object.keys,
-		_isArray = Array.prototype.isArray,
-		_indexOf = Array.prototype.indexOf,
 
 	// Local ajax settings
 	// Global ajax settings will overwrite locals
@@ -189,40 +185,20 @@
 					return elem ? [elem] : [];
 				}
 				else {
-					result = element.querySelectorAll(selector);
-					return makeArray(result);
+					return _slice.call(element.querySelectorAll(selector));
 				}
 			}
 			if(_isClass.test(selector)) {
-				// Don't use makeArray method, because if getElementsByClassName
-				// is not supported we work with IE8
-				if(document.getElementsByClassName) {
-					return _slice.call(element.getElementsByClassName(selector.substr(1)));
-				}
-				else {
-					return element.querySelectorAll(selector);
-				}
+				return _slice.call(element.getElementsByClassName(selector.substr(1)));
 			}
 			else if(_isTag.test(selector)) {
-				result = element.getElementsByTagName(selector);
-				return makeArray(result);
+				return _slice.call(element.getElementsByTagName(selector));
 			}
 			else {
-				return makeArray(element.querySelectorAll(selector));
+				return _slice.call(element.querySelectorAll(selector));
 			}
 		}
 		return [];
-	};
-
-	// Use native slice method to make result an array
-	function makeArray(items) {
-		try {
-			return _slice.call(items);
-		}
-		catch(e) {
-			// Return NodeList if slice is not supporter. For old browsers
-			return items;
-		}
 	};
 
 	// Remove element properties before remove or replace them
@@ -518,14 +494,8 @@
 
 	// Handler DOMContentLoaded event
 	// Run all callbacks from _domReadyCallbacks array
-	if(document.addEventListener) {
-		document.addEventListener('DOMContentLoaded', _triggerReadyCallback, false);
-		window.addEventListener('load', _triggerReadyCallback, false);
-	}
-	else if(document.attachEvent) {
-		document.attachEvent('onreadystatechange', _triggerReadyCallback);
-		window.attachEvent('onload', _triggerReadyCallback);
-	}
+	document.addEventListener('DOMContentLoaded', _triggerReadyCallback, false);
+	window.addEventListener('load', _triggerReadyCallback, false);
 
 	// Current version of FastJs
 	f.version = '1.0';
@@ -590,42 +560,6 @@
 		}
 	})();
 
-	f.isArray = function(arr) {
-		if(typeof _isArray === 'function') {
-			return _isArray.call(arr);
-		}
-		return Object.prototype.toString.call(arr) === '[object Array]';
-	};
-
-	f.inArray = function(value, array, i) {
-		if(typeof _indexOf === 'function') {
-			return _indexOf.call(array, value, i);
-		}
-
-		var length = array.length;
-		i = i ? i < 0 ? Math.max(0, length + i) : i : 0;
-		for(; i < length; i++) {
-			if(i in array && array[i] === value) {
-				return i;
-			}
-		}
-		return -1;
-	};
-
-	f.keys = function(obj) {
-		if(typeof _keys === 'function') {
-			return _keys(obj);
-		}
-
-		var array = [];
-		for(var key in obj) {
-			if(obj.hasOwnProperty(key)) {
-				array[array.length] = key;
-			}
-		}
-		return array;
-	};
-
 	//------------- DOM methods ----------------
 	// Check element for some dom element properties
 	// Anyway it could be object with the same properties
@@ -688,7 +622,7 @@
 	};
 
 	f.attr = function(element, name, value) {
-		name = f.trim(name);
+		name = name.trim();
 		if(!name) {
 			return [];
 		}
@@ -858,7 +792,7 @@
 	f.create = function(html) {
 		var wrap = document.createElement('div');
 		wrap.innerHTML = html;
-		return makeArray(wrap.childNodes);
+		return _slice.call(wrap.childNodes);
 	};
 
 	f.html = function(element, html) {
@@ -889,7 +823,7 @@
 				result[result.length] = element[i].contentDocument || element[i].contentWindow.document;
 			}
 			else {
-				result = result.concat(makeArray(element[i].childNodes));
+				result = result.concat(_slice.call(element[i].childNodes));
 			}
 		}
 		return result;
@@ -953,7 +887,7 @@
 					elemClass += name + ' ';
 				}
 			}
-			elem.className = f.trim(elemClass);
+			elem.className = elemClass.trim();
 		}
 		return element;
 	};
@@ -986,10 +920,10 @@
 			name = ' ' + name + ' ';
 
 			if(elemClass.indexOf(name) > -1) {
-				elem.className = f.trim(elemClass.replace(name, ' '));
+				elem.className = elemClass.replace(name, ' ').trim();
 			}
 			else {
-				elem.className += ' ' + f.trim(name);
+				elem.className += ' ' + name.trim();
 			}
 		}
 		return element;
@@ -1010,19 +944,7 @@
 
 		if(value) {
 			for(; i < length; i++) {
-				if(style === 'opacity' && f.browser.msie && f.browser.version < 9) {
-					var filter = element[i].style.filter;
-					if(filter.toLowerCase().indexOf('opacity') !== -1) {
-						filter = filter.replace(/opacity=(\d+)/, 'opacity=' + value * 100);
-					}
-					else {
-						filter += 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + value * 100 + ')';
-					}
-					element[i].style.filter = filter;
-				}
-				else {
-					element[i].style[style] = value;
-				}
+				element[i].style[style] = value;
 			}
 		}
 		else {
@@ -1163,7 +1085,7 @@
 
 	//----------- Ajax -------------
 	f.isJSON = function(json) {
-		if(!f.trim(json)) {
+		if(!json.trim()) {
 			return false;
 		}
 
@@ -1173,7 +1095,7 @@
 	};
 
 	f.parseJSON = function(json) {
-		json = f.trim(json);
+		json = json.trim();
 
 		if(!json || typeof json !== 'string') {
 			return null;
@@ -1298,14 +1220,6 @@
 			}
 		}
 		return target;
-	};
-
-	f.trim = function(string) {
-		// If available use native trim method
-		if(typeof _trim === 'function') {
-			return _trim.call(string);
-		}
-		return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 	};
 
 	f.error = function(msg) {
