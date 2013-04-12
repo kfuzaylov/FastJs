@@ -31,6 +31,7 @@
 
 	//Shortcut for prototype methods
 		_slice = Array.prototype.slice,
+		_isArray = Array.isArray,
 
 	// Local ajax settings
 	// Global ajax settings will overwrite locals
@@ -683,7 +684,7 @@
 
 			// Make sure this is array
 			// Get error when child is a text node, because it has length property
-				len = f.isArray(child) && child.length, c = 0;
+				len = _isArray(child) && child.length, c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -702,7 +703,7 @@
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-				len = f.isArray(elem) && elem.length,
+				len = _isArray(elem) && elem.length,
 				afterElem = target[i],
 				parent = afterElem.parentNode, c = 0;
 
@@ -733,7 +734,7 @@
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-				len = f.isArray(elem) && elem.length,
+				len = _isArray(elem) && elem.length,
 				beforeElem = target[i], c = 0;
 
 			if(len) {
@@ -765,7 +766,7 @@
 		var collection = [],
 
 		// Make sure this is array with dom elements
-			length = f.isArray(element) && element.length, i = 0;
+			length = _isArray(element) && element.length, i = 0;
 
 		if(length) {
 			for(; i < length; i++) {
@@ -968,7 +969,7 @@
 
 	f.val = function(element) {
 		// Return value of the first element
-		var elem = f.isArray(element) && element[0] || element,
+		var elem = _isArray(element) && element[0] || element,
 			tag = elem.tagName.toLowerCase();
 
 		if(tag === 'input' || tag === 'textarea') {
@@ -1006,7 +1007,7 @@
 	},
 
 	f.serialize = function(element) {
-		var inputs = _find(f.isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
+		var inputs = _find(_isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
 
 		for(; i < length; i++) {
 			var elem = inputs[i];
@@ -1020,7 +1021,7 @@
 				}
 				var val = f.val(elem);
 
-				if(f.isArray(val)) {
+				if(_isArray(val)) {
 					var c = 0, len = val.length;
 
 					for(; c < len; c++) {
