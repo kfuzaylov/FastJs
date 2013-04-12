@@ -10,28 +10,28 @@
 	// Quick references to window properties
 	var document = window.document,
 
-		userAgent = window.navigator.userAgent,
+	userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
-		_domReady = false,
+	_domReady = false,
 
 	// Callbacks to trigger on DOMContentLoaded event
-		_domReadyCallbacks = [],
+	_domReadyCallbacks = [],
 
 	// Regular expression to match selectors
-		_isClass = /^\.[-\w]+$/i,
-		_isId = /^#[-\w]+$/i,
-		_isTag = /^[a-z0-9]+$/i,
+	_isClass = /^\.[-\w]+$/i,
+	_isId = /^#[-\w]+$/i,
+	_isTag = /^[a-z0-9]+$/i,
 
 	// Object types to create type check methods
-		_objectTypes = ['Object', 'HTMLCollection', 'Function', 'String', 'Number'],
+	_objectTypes = ['Object', 'HTMLCollection', 'Function', 'String', 'Number'],
 
-	// Identifier for each event handler
-		_handlerId = 0,
+	// Idetifier for each event handler
+	_handlerId = 0,
 
 	//Shortcut for prototype methods
-		_slice = Array.prototype.slice,
-		_isArray = Array.isArray,
+	_slice = Array.prototype.slice,
+	_isArray = Array.isArray,
 
 	// Local ajax settings
 	// Global ajax settings will overwrite locals
@@ -71,7 +71,8 @@
 	function _triggerReadyCallback(event) {
 		if(!_domReady) {
 			_domReady = true;
-			var length = _domReadyCallbacks.length, i = 0;
+			var length = _domReadyCallbacks.length,
+			i = 0;
 
 			for(; i < length; i++) {
 				_domReadyCallbacks[i]();
@@ -121,7 +122,8 @@
 		var parents = [];
 
 		while(element.parentNode && element.parentNode.nodeType === 1) {
-			var parentNode = element.parentNode, length = parents.length;
+			var parentNode = element.parentNode,
+			length = parents.length;
 
 			if(selector) {
 				if(_isId.test(selector) && parentNode.id === selector.substr(1)) {
@@ -149,10 +151,15 @@
 
 	// Get all children or by selector
 	function _getChildren(element, selector) {
-		var children = [], allChildren = element.childNodes, length = allChildren.length, i = 0;
+		var allChildren = element.childNodes,
+		length = allChildren.length,
+		children = [],
+		i = 0;
 
 		for(; i < length; i++) {
-			var item = allChildren[i], len = children.length;
+			var item = allChildren[i],
+			len = children.length;
+
 			if(allChildren[i].nodeType === 1) {
 				if(selector) {
 					if(_isId.test(selector) && item.id === selector.substr(1)) {
@@ -167,7 +174,8 @@
 					else if(item === element.querySelector(selector)) {
 						children[len] = item;
 					}
-				} else {
+				}
+				else {
 					children[len] = item;
 				}
 			}
@@ -177,7 +185,6 @@
 
 	function _find(element, selector) {
 		if(selector) {
-			var result;
 			if(_isId.test(selector)) {
 				// If element is document use getElementById
 				// This is the fastest way to get element by id
@@ -186,17 +193,17 @@
 					return elem ? [elem] : [];
 				}
 				else {
-					return _slice.call(element.querySelectorAll(selector));
+					return element.querySelectorAll(selector);
 				}
 			}
 			if(_isClass.test(selector)) {
-				return _slice.call(element.getElementsByClassName(selector.substr(1)));
+				return element.getElementsByClassName(selector.substr(1));
 			}
 			else if(_isTag.test(selector)) {
-				return _slice.call(element.getElementsByTagName(selector));
+				return element.getElementsByTagName(selector);
 			}
 			else {
-				return _slice.call(element.querySelectorAll(selector));
+				return element.querySelectorAll(selector);
 			}
 		}
 		return [];
@@ -205,10 +212,12 @@
 	// Remove element properties before remove or replace them
 	// ot prevent memory leak
 	function _removeData(element) {
-		var length = element.length, i = 0
+		var length = element.length,
+		i = 0
 
 		for(; i < length; i++) {
 			var elem = element[i];
+
 			if(elem.events) {
 				try {
 					delete elem.events;
@@ -222,7 +231,6 @@
 
 	//------------ Events -------------
 	function _attachEvent(element, selector, type, handler) {
-
 		// Return if element is text or comment node
 		if(element.nodeType == 3 || element.nodeType == 8 || !type || !handler) {
 			return;
@@ -332,7 +340,9 @@
 			return;
 		}
 
-		var events = element.events, handlers, id;
+		var events = element.events,
+		handlers,
+		id;
 
 		if(!handler && !selector) {
 			if(events[type]) {
@@ -424,14 +434,15 @@
 
 	function _liveEvent(event) {
 		event = _adjustEvent(event);
-		var parent = this,
-			handlers = this.events.live[event.type],
-			selectedElements = [];
+		var handlers = this.events.live[event.type],
+		selectedElements = [],
+		i;
 
-		for(var i in handlers) {
+		for(i in handlers) {
 			var handler = handlers[i],
-				elements = _find(parent, handler.selector),
-				length = elements.length, c = 0;
+			elements = _find(this, handler.selector),
+			length = elements.length,
+			c = 0;
 
 			for(; c < length; c++) {
 				var element = elements[c];
@@ -456,11 +467,13 @@
 		catch(e) {
 			try {
 				xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-			} catch(e) {
+			}
+			catch(e) {
 				xmlhttp = false;
 			}
 		}
-		if(!xmlhttp && typeof XMLHttpRequest != 'undefined') {
+
+		if(!xmlhttp) {
 			xmlhttp = new XMLHttpRequest();
 		}
 		return xmlhttp;
@@ -478,16 +491,19 @@
 		if(type == 'text') {
 			return response;
 		}
+
 		if(type == 'script') {
 			f.evalScript(response);
 			return response;
 		}
+
 		if(type == 'xml') {
 			if(!this.responseXML) {
 				this.responseXML = f.parseXML(response);
 			}
 			return this.responseXML;
 		}
+
 		if(type == 'json') {
 			return f.parseJSON(response);
 		}
@@ -569,7 +585,9 @@
 	};
 
 	f.parents = function(element, selector) {
-		var parents = [], length = element.length, i = 0;
+		var length = element.length,
+		parents = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			parents = parents.concat(_getParents(element[i], selector));
@@ -578,13 +596,9 @@
 	};
 
 	f.closest = function(element, selector) {
-		// Return if selector '', 0, null or undefined
-		if(!selector) {
-			return [];
-		}
-
 		var length = element.length,
-			closest = [], i = 0;
+		closest = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			closest = closest.concat(_getParents(element[i], selector, true));
@@ -593,8 +607,9 @@
 	};
 
 	f.children = function(element, selector) {
-		var children = [],
-			length = element.length, i = 0;
+		var length = element.length,
+		children = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			children = children.concat(_getChildren(element[i], selector));
@@ -603,13 +618,15 @@
 	};
 
 	f.siblings = function(element, selector) {
-		var siblings = [],
-			length = element.length, i = 0;
+		var length = element.length,
+		siblings = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-				children = _getChildren(elem.parentNode, selector),
-				len = children.length, c = 0;
+			children = _getChildren(elem.parentNode, selector),
+			len = children.length,
+			c = 0;
 
 			for(; c < len; c++) {
 				// Cut the element from the list
@@ -624,12 +641,10 @@
 
 	f.attr = function(element, name, value) {
 		name = name.trim();
-		if(!name) {
-			return [];
-		}
 
 		if(value) {
-			var length = element.length, i = 0;
+			var length = element.length,
+			i = 0;
 
 			for(; i < length; i++) {
 				element[i].setAttribute(name, value);
@@ -642,15 +657,12 @@
 	};
 
 	f.wrap = function(element, wrapper) {
-		if(!wrapper) {
-			return element;
-		}
-
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-				wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
+			wrapElement = f.isString(wrapper) ? document.createElement(wrapper) : wrapper.cloneNode(true);
 
 			elem.parentNode.insertBefore(wrapElement, elem);
 			wrapElement.appendChild(elem);
@@ -659,12 +671,15 @@
 	};
 
 	f.unwrap = function(element) {
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var parent = element[i].parentNode;
-			if(parent.tagName !== 'BODY') {
-				var children = parent.childNodes, len = children.length, c = 0;
+			if(parent.tagName.toLowerCase() !== 'body') {
+				var children = parent.childNodes,
+				len = children.length,
+				c = 0;
 
 				for(; c < len; c++) {
 					parent.parentNode.insertBefore(children[0], parent);
@@ -676,7 +691,8 @@
 	};
 
 	f.append = function(element, children) {
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			// Clone children until the last iteration
@@ -684,7 +700,8 @@
 
 			// Make sure this is array
 			// Get error when child is a text node, because it has length property
-				len = _isArray(child) && child.length, c = 0;
+			len = _isArray(child) && child.length,
+			c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -699,13 +716,15 @@
 	};
 
 	f.insertAfter = function(element, target) {
-		var length = target.length, i = 0;
+		var length = target.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-				len = _isArray(elem) && elem.length,
-				afterElem = target[i],
-				parent = afterElem.parentNode, c = 0;
+			len = elem.length,
+			afterElem = target[i],
+			parent = afterElem.parentNode,
+			c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -730,12 +749,14 @@
 	};
 
 	f.insertBefore = function(element, target) {
-		var length = target.length, i = 0;
+		var length = target.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = i !== length - 1 ? f.clone(element) : element,
-				len = _isArray(elem) && elem.length,
-				beforeElem = target[i], c = 0;
+			len = elem.length,
+			beforeElem = target[i],
+			c = 0;
 
 			if(len) {
 				for(; c < len; c++) {
@@ -750,7 +771,8 @@
 	};
 
 	f.remove = function(element) {
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var removed = element[i];
@@ -765,8 +787,9 @@
 	f.clone = function(element) {
 		var collection = [],
 
-		// Make sure this is array with dom elements
-			length = _isArray(element) && element.length, i = 0;
+		// Make sure this is collection with dom elements
+		length = element.length,
+		i = 0;
 
 		if(length) {
 			for(; i < length; i++) {
@@ -780,25 +803,31 @@
 	};
 
 	f.find = function(element, selector) {
-		var result = [],
-			length = element.length ? element.length : 1,
-			i = 0;
+		var collection = [],
+		result,
+		length = element.length ? element.length : 1,
+		i = 0;
 
 		for(; i < length; i++) {
-			result = result.concat(_find(element[i] || element, selector));
+			result = _find(element[i] || element, selector);
+
+			// Make result an array to concat with collection
+			result = _isArray(result) ? result : _slice.call(result);
+			collection = collection.concat(result);
 		}
-		return result;
+		return collection;
 	};
 
 	f.create = function(html) {
 		var wrap = document.createElement('div');
 		wrap.innerHTML = html;
-		return _slice.call(wrap.childNodes);
+		return wrap.childNodes;
 	};
 
 	f.html = function(element, html) {
 		var length = element.length,
-			result = '', i = 0;
+		result = '',
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -815,9 +844,9 @@
 	};
 
 	f.contents = function(element) {
-		var result = [],
-			length = element.length,
-			i = 0;
+		var length = element.length,
+		result = [],
+		i = 0;
 
 		for(; i < length; i++) {
 			if(element[i].tagName.toLowerCase() === 'iframe') {
@@ -832,7 +861,8 @@
 
 	f.text = function(element, text) {
 		var length = element.length,
-			i = 0, result = '';
+		result = '',
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -858,14 +888,14 @@
 
 	f.offset = function(element) {
 		var box = element[0].getBoundingClientRect(),
-			body = document.body,
-			docElem = document.documentElement,
+		body = document.body,
+		docElem = document.documentElement,
 
-			scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
-			scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
+		scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
+		scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
 
-			clientTop = docElem.clientTop || body.clientTop || 0,
-			clientLeft = docElem.clientLeft || body.clientLeft || 0;
+		clientTop = docElem.clientTop || body.clientTop || 0,
+		clientLeft = docElem.clientLeft || body.clientLeft || 0;
 		return {
 			left: box.left + scrollLeft - clientLeft,
 			top: box.top + scrollTop - clientTop
@@ -874,9 +904,9 @@
 
 	f.addClass = function(element, names) {
 		var length = element.length,
-			names = names.split(/\s/),
-			len = names.length,
-			i = 0, c = 0, name, elem, elemClass;
+		names = names.split(/\s/),
+		len = names.length,
+		i = 0, c = 0, name, elem, elemClass;
 
 		for(; i < length; i++) {
 			elem = element[i];
@@ -894,10 +924,14 @@
 	};
 
 	f.removeClass = function(element, names) {
-		var length = element.length, names = names.split(/\s/), len = names.length, i = 0, c = 0;
+		var length = element.length,
+		names = names.split(/\s/),
+		len = names.length,
+		i = 0, c = 0;
 
 		for(; i < length; i++) {
-			var elem = element[i], elemClass = elem.className;
+			var elem = element[i],
+			elemClass = elem.className;
 
 			for(; c < len; c++) {
 				var regExp = new RegExp('(^| )' + names[c] + '( |$)');
@@ -913,11 +947,12 @@
 	};
 
 	f.toggleClass = function(element, name) {
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-				elemClass = ' ' + elem.className + ' ';
+			elemClass = ' ' + elem.className + ' ';
 			name = ' ' + name + ' ';
 
 			if(elemClass.indexOf(name) > -1) {
@@ -931,7 +966,8 @@
 	};
 
 	f.css = function(element, style, value) {
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 
 		if(style.indexOf('-') !== -1) {
 			style = style.replace(/^-ms-/, 'ms-').replace(/-([\da-z])/, function(str, match) {
@@ -970,14 +1006,17 @@
 	f.val = function(element) {
 		// Return value of the first element
 		var elem = _isArray(element) && element[0] || element,
-			tag = elem.tagName.toLowerCase();
+		tag = elem.tagName.toLowerCase();
 
 		if(tag === 'input' || tag === 'textarea') {
 			return elem.value;
 		}
 
 		if(tag === 'select') {
-			var values = [], options = elem.options, single = elem.type == 'select-one', index = options.selectedIndex,
+			var values = [],
+			options = elem.options,
+			single = elem.type == 'select-one',
+			index = options.selectedIndex,
 
 			// Minimize cycle iterations if select is not multiple
 				length = single ? index + 1 : options.length, i = single ? index : 0;
@@ -988,10 +1027,11 @@
 			}
 
 			for(; i < length; i++) {
-				var option = options[i], parent = option.parentNode;
+				var option = options[i],
+				parent = option.parentNode;
 
 				// Do not handle disabled options and options in disabled optgroup
-				if(option.selected && !option.disabled && (parent && (!parent.disabled || !parent.tagName === 'OPTGROUP'))) {
+				if(option.selected && !option.disabled && (parent && (!parent.disabled || !parent.tagName.toLowerCase() === 'optgroup'))) {
 
 					// Return value if select is not multiple
 					if(single) {
@@ -1007,7 +1047,9 @@
 	},
 
 	f.serialize = function(element) {
-		var inputs = _find(_isArray(element) ? element[0] : element, 'input, select, textarea'), length = inputs.length, params = [], i = 0;
+		var inputs = _find(_isArray(element) ? element[0] : element, 'input, select, textarea'),
+		length = inputs.length,
+		params = [], i = 0;
 
 		for(; i < length; i++) {
 			var elem = inputs[i];
@@ -1022,7 +1064,8 @@
 				var val = f.val(elem);
 
 				if(_isArray(val)) {
-					var c = 0, len = val.length;
+					var c = 0,
+					len = val.length;
 
 					for(; c < len; c++) {
 						params[params.length] = encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]);
@@ -1062,7 +1105,8 @@
 			return;
 		}
 
-		var length = element.length, i = 0;
+		var length = element.length,
+		i = 0;
 		for(; i < length; i++) {
 			_removeEvent(element[i], selector, type, handler);
 		}
@@ -1071,8 +1115,7 @@
 
 	f.trigger = function(element, event) {
 		var length = element.length,
-			elem,
-			i = 0;
+		elem, i = 0;
 
 		for(; i < length; i++) {
 			elem = element[i];
@@ -1091,25 +1134,7 @@
 		}
 
 		json = json.replace(/\\["\\\/bfnrtu]/g, '@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').replace(/(?:^|:|,)(?:\s*\[)+/g, '');
-
 		return (/^[\],:{}\s]*$/.test(json));
-	};
-
-	f.parseJSON = function(json) {
-		json = json.trim();
-
-		if(!json || typeof json !== 'string') {
-			return null;
-		}
-
-		// If browser support use native json parse method
-		if(window.JSON && window.JSON.parse) {
-			return window.JSON.parse(json);
-		}
-
-		if(f.isJSON(json)) {
-			return (new Function('return ' + json))();
-		}
 	};
 
 	f.parseXML = function(data) {
@@ -1204,12 +1229,16 @@
 	// Objects duplicate keys will be replaced with the last ones
 	// Arrays just being concat
 	f.merge = function() {
-		var target = arguments[0], length = arguments.length, c = 1;
+		var target = arguments[0],
+		length = arguments.length,
+		c = 1;
 
 		for(; c < length; c++) {
 			var element = arguments[c];
 			if(target.length !== undefined) {
-				var len = element.length, i = 0;
+				var len = element.length,
+				i = 0;
+
 				for(; i < len; i++) {
 					target[target.length] = element[i];
 				}
@@ -1244,7 +1273,6 @@
 			}
 
 			var cookies = encodeURIComponent(name) + '=' + encodeURIComponent(value);
-
 			for(var key in props) {
 				cookies += '; ' + key + '=' + props[key];
 			}
