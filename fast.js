@@ -42,6 +42,7 @@
 		error: function(xhr) {},
 		data: null,
 		dataType: 'text',
+		responseType: 'text',
 		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 		async: true
 	};
@@ -457,26 +458,6 @@
 			var object = selectedElements[i];
 			object.fn.call(object.elem, event);
 		}
-	};
-
-	function _xmlHttpRequest() {
-		var xmlhttp;
-		try {
-			xmlhttp = new ActiveXObject('Msxml2.XMLHTTP');
-		}
-		catch(e) {
-			try {
-				xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-			}
-			catch(e) {
-				xmlhttp = false;
-			}
-		}
-
-		if(!xmlhttp) {
-			xmlhttp = new XMLHttpRequest();
-		}
-		return xmlhttp;
 	};
 
 	function _handleAjaxResponse(type) {
@@ -1200,20 +1181,19 @@
 			settings.data = null;
 		}
 
-		var request = _xmlHttpRequest();
+		var request = new XMLHttpRequest();
 		request.open(settings.type, settings.url, settings.async);
+		request.responseType = settings.responseType;
 		request.setRequestHeader('Content-Type', settings.contentType);
 
-		request.onreadystatechange = function() {
+		request.onload = function() {
 			var status = request.status;
-			if(request.readyState == 4) {
-				if(status >= 200 && status < 300 || status === 304) {
-					var response = _handleAjaxResponse.call(request, settings.dataType);
-					settings.success(response);
-				}
-				else {
-					settings.error(request);
-				}
+			if(status >= 200 && status < 300 || status === 304) {
+				var response = _handleAjaxResponse.call(request, settings.dataType);
+				settings.success(response);
+			}
+			else {
+				settings.error(request);
 			}
 		};
 
