@@ -41,7 +41,6 @@
 		success: function(data) {},
 		error: function(xhr) {},
 		data: null,
-		dataType: 'text',
 		responseType: 'text',
 		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 		async: true
@@ -460,8 +459,10 @@
 		}
 	};
 
-	function _handleAjaxResponse(type) {
-		var response = this.responseText;
+	function _handleAjaxResponse() {
+		var response = this.responseText,
+		type = this.responseType;
+
 		if(!response) {
 			return;
 		}
@@ -470,23 +471,16 @@
 		type = type ? type : 'text';
 
 		if(type == 'text') {
-			return response;
+			return response || '';
 		}
 
-		if(type == 'script') {
-			f.evalScript(response);
-			return response;
-		}
-
-		if(type == 'xml') {
-			if(!this.responseXML) {
-				this.responseXML = f.parseXML(response);
-			}
-			return this.responseXML;
+		if(type == 'document') {
+			type = response.toLowerCase().indexOf('<?xml') !== -1 ? 'application/xml' : 'text/html';
+			return f.domParser(response, type);
 		}
 
 		if(type == 'json') {
-			return f.parseJSON(response);
+			return window.JSON.parse(response);
 		}
 	};
 
@@ -1118,31 +1112,8 @@
 		return (/^[\],:{}\s]*$/.test(json));
 	};
 
-	f.parseXML = function(data) {
-		var xml, tmp;
-		if(!data || typeof data !== 'string') {
-			return null;
-		}
-
-		try {
-			if(window.DOMParser) {
-				tmp = new DOMParser();
-				xml = tmp.parseFromString(data, 'text/xml');
-			}
-			else {
-				xml = new ActiveXObject('Microsoft.XMLDOM');
-				xml.async = false;
-				xml.loadXML(data);
-			}
-		}
-		catch(e) {
-			xml = undefined;
-		}
-
-		if(!xml || !xml.documentElement || xml.getElementsByTagName("parsererror").length) {
-			f.error('Invalid XML: ' + data);
-		}
-		return xml;
+	f.domParser = function(data, type) {
+		return (new DOMParser()).parseFromString(data, type);
 	};
 
 	f.evalScript = function(script) {
@@ -1187,10 +1158,10 @@
 		request.setRequestHeader('Content-Type', settings.contentType);
 
 		request.onload = function() {
-			var status = request.status;
+			var status = this.status;
 			if(status >= 200 && status < 300 || status === 304) {
-				var response = _handleAjaxResponse.call(request, settings.dataType);
-				settings.success(response);
+				var response = this.response || _handleAjaxResponse.call(request);
+				settings.success(response, request);
 			}
 			else {
 				settings.error(request);
