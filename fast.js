@@ -455,10 +455,8 @@
 		}
 	};
 
-	function _handleAjaxResponse() {
-		var response = this.responseText,
-		type = this.responseType;
-
+	function _handleAjaxResponse(type) {
+		var response = this.responseText;
 		if(!response) {
 			return;
 		}
@@ -1109,6 +1107,10 @@
 	};
 
 	f.domParser = function(data, type) {
+		// Supported types
+		// text/html - HTML document
+		// application/xml - XML document
+		// image/svg+xml - SVG document
 		return (new DOMParser()).parseFromString(data, type);
 	};
 
@@ -1153,7 +1155,11 @@
 		var xhr = new XMLHttpRequest();
 		xhr.open(settings.type, settings.url, settings.async);
 
-		if(settings.responseType) {
+		// Google Chrome and Internet Explorer don't support "json" response
+		if(settings.responseType && settings.responseType == 'json' && (f.browser.msie || f.browser.chrome)) {
+				settings.dataType = settings.responseType;
+		}
+		else {
 			xhr.responseType = settings.responseType;
 		}
 
@@ -1180,7 +1186,7 @@
 		xhr.onload = function() {
 			var status = this.status;
 			if(status >= 200 && status < 300 || status === 304) {
-				var response = this.response || _handleAjaxResponse.call(this);
+				var response = !this.response || settings.dataType ? _handleAjaxResponse.call(this, settings.responseType) : this.response;
 				settings.success(response, this);
 			}
 			else {
@@ -1231,7 +1237,7 @@
 		// Set or delete cookie
 		if(typeof value !== 'undefined') {
 			props = props || {};
-			var exp = props.expires
+			var exp = props.expires;
 
 			if(typeof exp === 'number' && exp) {
 				var date = new Date();
