@@ -37,13 +37,9 @@
 	// Global ajax settings will overwrite locals
 	_ajaxSettings = {
 		url: '',
-		type: 'GET',
-		success: function(data) {},
-		error: function(xhr) {},
 		data: null,
-		responseType: 'text',
-		contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-		async: true
+		async: true,
+		type: 'GET'
 	};
 
 	//------------- Privet methods -----------------
@@ -994,7 +990,7 @@
 			index = options.selectedIndex,
 
 			// Minimize cycle iterations if select is not multiple
-				length = single ? index + 1 : options.length, i = single ? index : 0;
+			length = single ? index + 1 : options.length, i = single ? index : 0;
 
 			// Index -1 none options were selected
 			if(index < 0) {
@@ -1138,7 +1134,7 @@
 		// Make type upper case
 		settings.type = settings.type.toUpperCase();
 
-		// Encode params
+		// Set data object to send them as POST or GET params
 		if(f.isObject(settings.data)) {
 			var params = '';
 			for(var key in settings.data) {
@@ -1147,29 +1143,53 @@
 			settings.data = params;
 		}
 
+		// Here data is additional GET params
+		// Object could not be sent with GET method
 		if(settings.type === 'GET' && settings.data) {
 			settings.url += (settings.url.indexOf('?') !== -1 ? '&' : '?') + settings.data.replace(/%20/g, '+');
 			settings.data = null;
 		}
 
-		var request = new XMLHttpRequest();
-		request.open(settings.type, settings.url, settings.async);
-		request.responseType = settings.responseType;
-		request.setRequestHeader('Content-Type', settings.contentType);
+		var xhr = new XMLHttpRequest();
+		xhr.open(settings.type, settings.url, settings.async);
 
-		request.onload = function() {
+		if(settings.responseType) {
+			xhr.responseType = settings.responseType;
+		}
+
+		if(settings.contentType) {
+			xhr.setRequestHeader('Content-Type', settings.contentType);
+		}
+
+		if(settings.downProgress) {
+			xhr.onprogress = function(e) {
+				if(e.lengthComputable) {
+					settings.downProgress.call(this, e.loaded, e.total);
+				}
+			};
+		}
+
+		if(settings.upProgress) {
+			xhr.upload.onprogress = function(e) {
+				if(e.lengthComputable) {
+					settings.upProgress.call(this, e.loaded, e.total);
+				}
+			};
+		}
+
+		xhr.onload = function() {
 			var status = this.status;
 			if(status >= 200 && status < 300 || status === 304) {
-				var response = this.response || _handleAjaxResponse.call(request);
-				settings.success(response, request);
+				var response = this.response || _handleAjaxResponse.call(this);
+				settings.success(response, this);
 			}
 			else {
-				settings.error(request);
+				settings.error(this);
 			}
 		};
 
-		request.send(settings.data);
-		return request;
+		xhr.send(settings.data);
+		return xhr;
 	};
 
 	// Ajax global settings
