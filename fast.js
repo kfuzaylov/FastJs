@@ -112,6 +112,14 @@
 		return browser;
 	};
 
+	function _returnTrue() {
+		return true;
+	};
+
+	function _returnFalse() {
+		return false;
+	};
+
 	// Method gets all parents or by selector
 	// If closest is true return the first parent by selector
 	function _getParents(element, selector, closest) {
@@ -215,18 +223,21 @@
 			var elem = element[i];
 
 			if(elem.events) {
-				try {
-					delete elem.events;
-				}
-				catch(e) {
-					elem.removeAttribute('events');
-				}
+				delete elem.events;
+			}
+
+			if(elem.liveHandler) {
+				delete elem.liveHandler;
+			}
+
+			if(elem.handler) {
+				delete elem.handler;
 			}
 		}
 	};
 
 	//------------ Events -------------
-	function _attachEvent(element, selector, type, handler) {
+	function _attachEvent(element, type, selector, handler) {
 		// Return if element is text or comment node
 		if(element.nodeType == 3 || element.nodeType == 8 || !type || !handler) {
 			return;
@@ -240,9 +251,11 @@
 		if(!element.events) {
 			element.events = {};
 
-			element.handle = function(event) {
-				return _execHandlers.call(element, event);
-			};
+			if(!selector) {
+				element.handle = function(event) {
+					return _execHandlers.call(element, event);
+				};
+			}
 		}
 
 		var events = element.events;
@@ -288,7 +301,7 @@
 			}
 
 			// stopNow property stops run of all the rest handlers
-			if(event.stopNow) {
+			if(event.stop) {
 				break;
 			}
 		}
@@ -320,7 +333,8 @@
 		}
 
 		if(event.pageX == null && event.clientX != null) {
-			var html = document.documentElement, body = document.body;
+			var html = document.documentElement,
+			body = document.body;
 			event.pageX = event.clientX + (html && html.scrollLeft || body && body.scrollLeft || 0) - (html.clientLeft || 0);
 			event.pageY = event.clientY + (html && html.scrollTop || body && body.scrollTop || 0) - (html.clientTop || 0);
 		}
@@ -331,7 +345,7 @@
 		return event;
 	};
 
-	function _removeEvent(element, selector, type, handler) {
+	function _removeEvent(element, type, selector, handler) {
 		if(!element.events) {
 			return;
 		}
@@ -358,8 +372,15 @@
 		if(selector) {
 			handlers = events.live && events.live[type];
 			for(id in handlers) {
-				if(selector === handlers[id].selector) {
-					delete handlers[id];
+				if(handler) {
+					if(handler === handlers[id] && selector === handlers[id].selector) {
+						delete handlers[id];
+					}
+				}
+				else {
+					if(selector === handlers[id].selector) {
+						delete handlers[id];
+					}
 				}
 			}
 		}
@@ -380,10 +401,13 @@
 		}
 
 		if(element.removeEventListener) {
-			element.removeEventListener(type, (selector ? element.liveHandler : element.handle), false);
-		}
-		else if(element.detachEvent) {
-			element.detachEvent('on' + type, (selector ? element.liveHandler : element.handle));
+			if(!handler && !selector) {
+				element.removeEventListener(type, element.liveHandler, false);
+				element.removeEventListener(type, element.handle, false);
+			}
+			else {
+				element.removeEventListener(type, (selector ? element.liveHandler : element.handle), false);
+			}
 		}
 
 		if(handlers !== true) {
@@ -416,16 +440,9 @@
 			return;
 		}
 
-		try {
-			delete element.handle;
-			delete element.events;
-			delete element.liveHandler;
-		}
-		catch(e) {
-			element.removeAttribute('handle');
-			element.removeAttribute('events');
-			element.removeAttribute('liveHandler');
-		}
+		delete element.handle;
+		delete element.events;
+		delete element.liveHandler;
 	};
 
 	function _liveEvent(event) {
@@ -564,7 +581,24 @@
 		return parents;
 	};
 
+	f.parent = function(element) {
+		var length = element.length,
+		parents = [],
+		i = 0;
+
+		for(; i < length; i++) {
+			if(element[i].parentNode) {
+				parents[parents.length] = element[i].parentNode;
+			}
+		}
+		return parents;
+	};
+
 	f.closest = function(element, selector) {
+		if(!selector) {
+			return [];
+		}
+
 		var length = element.length,
 		closest = [],
 		i = 0;
@@ -660,6 +694,10 @@
 	};
 
 	f.append = function(element, children) {
+		if(typeof children === 'string') {
+			children = f.create(children);
+		}
+
 		var length = element.length,
 		i = 0;
 
@@ -669,7 +707,7 @@
 
 			// Make sure this is array
 			// Get error when child is a text node, because it has length property
-			len = _isArray(child) && child.length,
+			len = child.length,
 			c = 0;
 
 			if(len) {
@@ -685,6 +723,9 @@
 	};
 
 	f.insertAfter = function(element, target) {
+		if(typeof element === 'string') {
+			element = f.create(element);
+		}
 		var length = target.length,
 		i = 0;
 
@@ -718,6 +759,9 @@
 	};
 
 	f.insertBefore = function(element, target) {
+		if(typeof element === 'string') {
+			element = f.create(element);
+		}
 		var length = target.length,
 		i = 0;
 
@@ -741,6 +785,7 @@
 
 	f.remove = function(element) {
 		var length = element.length,
+		removedCollection = [],
 		i = 0;
 
 		for(; i < length; i++) {
@@ -748,9 +793,10 @@
 			if(removed.parentNode) {
 				_removeData(removed.getElementsByTagName('*'));
 				removed.parentNode.removeChild(removed);
+				removedCollection[removedCollection.length] = removed;
 			}
 		}
-		return element;
+		return removedCollection;
 	};
 
 	f.clone = function(element) {
@@ -896,17 +942,17 @@
 		var length = element.length,
 		names = names.split(/\s/),
 		len = names.length,
-		i = 0, c = 0;
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i],
-			elemClass = elem.className;
-
+			elemClass = elem.className,
+			c = 0;
 			for(; c < len; c++) {
 				var regExp = new RegExp('(^| )' + names[c] + '( |$)');
 				elemClass = elemClass.replace(regExp, ' ');
 			}
-			elem.className = elemClass;
+			elem.className = elemClass.trim();
 		}
 		return element;
 	};
@@ -928,7 +974,7 @@
 				elem.className = elemClass.replace(name, ' ').trim();
 			}
 			else {
-				elem.className += ' ' + name.trim();
+				elem.className = (elem.className + ' ' + name).trim();
 			}
 		}
 		return element;
@@ -945,7 +991,7 @@
 		}
 
 		if(style === 'float') {
-			style = f.browser.msie ? 'styleFloat' : 'cssFloat';
+			style = 'cssFloat';
 		}
 
 		if(value) {
@@ -1016,7 +1062,7 @@
 	},
 
 	f.serialize = function(element) {
-		var inputs = _find(_isArray(element) ? element[0] : element, 'input, select, textarea'),
+		var inputs = _find(element.length ? element[0] : element, 'input, select, textarea'),
 		length = inputs.length,
 		params = [], i = 0;
 
@@ -1058,15 +1104,14 @@
 
 		var length = element.length, i = 0;
 		for(; i < length; i++) {
-			_attachEvent(element[i], selector, type, handler);
+			_attachEvent(element[i], type, selector, handler);
 		}
 		return element;
 	};
 
-	f.off = function(element, selector, type, handler) {
-		if(f.isFunction(type) || type === undefined) {
-			handler = type;
-			type = selector;
+	f.off = function(element, type, selector, handler) {
+		if(f.isFunction(selector) || selector === undefined) {
+			handler = selector;
 			selector = undefined;
 		}
 
@@ -1077,7 +1122,7 @@
 		var length = element.length,
 		i = 0;
 		for(; i < length; i++) {
-			_removeEvent(element[i], selector, type, handler);
+			_removeEvent(element[i], type, selector, handler);
 		}
 		return element;
 	};
@@ -1090,10 +1135,51 @@
 			elem = element[i];
 			// Trigger events only for element nodes
 			if(elem.nodeType === 1 && event) {
-				elem[event]();
+				event = f.event(event, {target: elem});
+				if(elem.handle) {
+					elem.handle.call(elem, event);
+				}
+
+				if(elem.liveHandler) {
+					elem.liveHandler.call(elem, event);
+				}
 			}
 		}
 		return element;
+	};
+
+	f.event = function(type, props) {
+		// Check if type is event object
+		if(type && type.type) {
+			return type;
+		}
+
+		var event = new function() {
+			this.type = type;
+			this.timeStamp = +new Date();
+			this.ctrlKey = false;
+			this.altKey = false;
+			this.metaKey = false;
+			this.shiftKey = false;
+			this.isDefaultPrevented = _returnFalse;
+			this.isPropagationStopped = _returnFalse;
+			this.isImmediatePropagationStopped = _returnFalse;
+			this.preventDefault = function() {
+				this.isDefaultPrevented = _returnTrue;
+			},
+			this.stopPropagation = function() {
+				this.isPropagationStopped = returnTrue;
+			},
+			this.stopImmediatePropagation = function() {
+				this.isImmediatePropagationStopped = returnTrue;
+			}
+		}
+
+		// Extend object with passed properties
+		if(props) {
+			f.merge(event, props);
+		}
+		return event;
 	};
 
 	//----------- Ajax -------------
@@ -1112,21 +1198,6 @@
 		// application/xml - XML document
 		// image/svg+xml - SVG document
 		return (new DOMParser()).parseFromString(data, type);
-	};
-
-	f.evalScript = function(script) {
-		if(script && /\S/.test(script)) {
-			// Use try/catch for cases when script like
-			// {key1: 22, key2: 33}
-			try {
-				(window.execScript || (function(script) {
-					window.eval.call(window, script);
-				}))(script);
-			}
-			catch(e) {
-				window.eval('(' + script + ')');
-			}
-		}
 	};
 
 	f.ajax = function(settings) {
