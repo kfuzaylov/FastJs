@@ -584,10 +584,12 @@
 	f.parent = function(element) {
 		var length = element.length,
 			parents = [],
+			parent,
 			i = 0;
 
 		for(; i < length; i++) {
-			if(element[i].parentNode) {
+			parent = element[i].parentNode;
+			if(parent && parent.nodeType === 1) {
 				parents.push(element[i].parentNode);
 			}
 		}
@@ -669,7 +671,8 @@
 	};
 
 	f.wrap = function(element, wrapper) {
-		var length = element.length,
+		var origins = [],
+		length = element.length,
 			i = 0;
 
 		for(; i < length; i++) {
@@ -678,8 +681,9 @@
 
 			elem.parentNode.insertBefore(wrapElement, elem);
 			wrapElement.appendChild(elem);
+			origins.push(elem);
 		}
-		return element;
+		return origins;
 	};
 
 	f.unwrap = function(element) {
@@ -691,10 +695,13 @@
 			if(parent.tagName.toLowerCase() !== 'body') {
 				var children = parent.childNodes,
 					len = children.length,
+					ancestor = parent.parentNode,
 					c = 0;
 
 				for(; c < len; c++) {
-					parent.parentNode.insertBefore(children[0], parent);
+					if(ancestor) {
+						ancestor.insertBefore(children[0], parent);
+					}
 				}
 				parent.parentNode.removeChild(parent);
 			}
@@ -843,9 +850,17 @@
 	};
 
 	f.create = function(html) {
-		var wrap = document.createElement('div');
-		wrap.innerHTML = html;
-		return wrap.childNodes;
+		var fragment = document.createDocumentFragment(),
+			tempNode = document.createElement('div');
+		tempNode.innerHTML = html;
+		var children = tempNode.childNodes,
+		length = children.length,
+			i = 0;
+
+		for(; i < length; i++) {
+			fragment.appendChild(children[0]);
+		}
+		return fragment.childNodes;
 	};
 
 	f.html = function(element, html) {
