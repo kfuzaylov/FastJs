@@ -3,7 +3,7 @@ FastJs
 
 The Fastest Javascript Framework
 
-Author: Fuzaylov Kadir
+Author: Kadir A. Fuzaylov
 
 Date: 16 January 2013
 
