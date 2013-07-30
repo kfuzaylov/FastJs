@@ -30,16 +30,18 @@
 		_handlerId = 0,
 
 	//Shortcut for prototype methods
-		_slice = Array.prototype.slice,
+		_arr = [],
+		_slice = _arr.slice,
 		_isArray = Array.isArray,
 
 	// Local ajax settings
-	// Global ajax settings will overwrite locals
+	// This settings will overwritten by globals
 		_ajaxSettings = {
 			url: '',
 			data: null,
 			async: true,
-			type: 'GET'
+			type: 'GET',
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
 		};
 
 	//------------- Privet methods -----------------
@@ -110,6 +112,12 @@
 		}
 
 		return browser;
+	};
+
+	function _document(data) {
+		var doc = document.implementation.createHTMLDocument('New document');
+		doc.body.innerHTML = data;
+		return doc;
 	};
 
 	function _returnTrue() {
@@ -196,17 +204,17 @@
 					return elem ? [elem] : [];
 				}
 				else {
-					return element.querySelectorAll(selector);
+					return _slice.call(element.querySelectorAll(selector));
 				}
 			}
 			if(_isClass.test(selector)) {
-				return element.getElementsByClassName(selector.substr(1));
+				return _slice.call(element.getElementsByClassName(selector.substr(1)));
 			}
 			else if(_isTag.test(selector)) {
-				return element.getElementsByTagName(selector);
+				return _slice.call(element.getElementsByTagName(selector));
 			}
 			else {
-				return element.querySelectorAll(selector);
+				return _slice.call(element.querySelectorAll(selector));
 			}
 		}
 		return [];
@@ -249,12 +257,12 @@
 
 		if(!element.events) {
 			element.events = {};
+		}
 
-			if(!selector) {
-				element.handle = function(event) {
-					return _execHandlers.call(element, event);
-				};
-			}
+		if(!selector && !element.handle) {
+			element.handle = function(event) {
+				return _execHandlers.call(element, event);
+			};
 		}
 
 		var events = element.events;
@@ -692,7 +700,7 @@
 
 		for(; i < length; i++) {
 			var parent = element[i].parentNode;
-			if(parent.tagName.toLowerCase() !== 'body') {
+			if(parent && parent.tagName && parent.tagName.toLowerCase() !== 'body') {
 				var children = parent.childNodes,
 					len = children.length,
 					ancestor = parent.parentNode,
@@ -719,13 +727,13 @@
 
 		for(; i < length; i++) {
 			// Clone children until the last iteration
-			var child = i !== length - 1 ? f.clone(children) : children, elem = element[i],
+			var child = i !== (length - 1) ? f.clone(children) : children,
+			elem = element[i],
 
 			// Make sure this is array
 			// Get error when child is a text node, because it has length property
-				len = child.length,
+				len = _isArray(child) && child.length,
 				c = 0;
-
 			if(len) {
 				for(; c < len; c++) {
 					elem.appendChild(child[c]);
@@ -800,6 +808,10 @@
 	};
 
 	f.remove = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			removedCollection = [],
 			i = 0;
@@ -817,18 +829,11 @@
 
 	f.clone = function(element) {
 		var collection = [],
+		length = element.length,
+		i = 0;
 
-		// Make sure this is collection with dom elements
-			length = element.length,
-			i = 0;
-
-		if(length) {
-			for(; i < length; i++) {
-				collection.push(element[i].cloneNode(true));
-			}
-		}
-		else {
-			return element.cloneNode(true);
+		for(; i < length; i++) {
+			collection.push(element[i].cloneNode(true));
 		}
 		return collection;
 	};
@@ -836,14 +841,11 @@
 	f.find = function(element, selector) {
 		var collection = [],
 			result,
-			length = element.length ? element.length : 1,
+			length = element.length,
 			i = 0;
 
 		for(; i < length; i++) {
-			result = _find(element[i] || element, selector);
-
-			// Make result an array to concat with collection
-			result = _isArray(result) ? result : _slice.call(result);
+			result = _find(element[i], selector);
 			collection = collection.concat(result);
 		}
 		return collection;
@@ -851,35 +853,33 @@
 
 	f.create = function(html) {
 		var fragment = document.createDocumentFragment(),
-			tempNode = document.createElement('div');
+		tempNode = document.createElement('div');
 		tempNode.innerHTML = html;
+
 		var children = tempNode.childNodes,
 		length = children.length,
-			i = 0;
+		i = 0;
 
 		for(; i < length; i++) {
 			fragment.appendChild(children[0]);
 		}
-		return fragment.childNodes;
+		return _slice.call(fragment.childNodes);
 	};
 
 	f.html = function(element, html) {
-		var length = element.length,
-			result = '',
+		if(html) {
+			var length = element.length,
 			i = 0;
 
-		for(; i < length; i++) {
-			var elem = element[i];
-			if(html) {
+			for(; i < length; i++) {
+				var elem = element[i];
 				// Remove element nodes properties to prevent memory leak
 				_removeData(elem.getElementsByTagName('*'));
 				elem.innerHTML = html;
 			}
-			else {
-				result += elem.innerHTML;
-			}
+			return element;
 		}
-		return html ? element : result;
+		return element[0].innerHTML;
 	};
 
 	f.contents = function(element) {
@@ -898,15 +898,27 @@
 		return result;
 	};
 
+	f.contains = function(context, element) {
+		if(element) {
+			while(element = element.parentNode) {
+				if(element === context) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+
 	f.text = function(element, text) {
 		var length = element.length,
-			result = '',
-			i = 0;
+		result = '',
+		hasText = text !== undefined,
+		i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
 
-			if(text !== undefined) {
+			if(hasText) {
 				// Remove element nodes properties to prevent memory leak
 				_removeData(elem.getElementsByTagName('*'));
 				elem.innerHTML = '';
@@ -922,22 +934,24 @@
 				}
 			}
 		}
-		return text !== undefined ? element : result;
+		return hasText ? element : result;
 	};
 
 	f.offset = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+		// Make sure this is not a disconnected DOM node
+		if(!f.contains(document.documentElement, element[0])) {
+			return {left: 0, top: 0};
+		}
+
 		var box = element[0].getBoundingClientRect(),
-			body = document.body,
-			docElem = document.documentElement,
+		docElem = document.documentElement;
 
-			scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop,
-			scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft,
-
-			clientTop = docElem.clientTop || body.clientTop || 0,
-			clientLeft = docElem.clientLeft || body.clientLeft || 0;
 		return {
-			left: box.left + scrollLeft - clientLeft,
-			top: box.top + scrollTop - clientTop
+			left: box.left + window.pageXOffset - docElem.clientLeft,
+			top: box.top + window.pageYOffset - docElem.clientTop
 		};
 	};
 
@@ -1024,25 +1038,20 @@
 			style = 'cssFloat';
 		}
 
-		if(value) {
+		if(value !== undefined) {
 			for(; i < length; i++) {
 				element[i].style[style] = value;
 			}
 		}
 		else {
 			var elem = element[0];
-			if(window.getComputedStyle) {
-				return window.getComputedStyle(elem, null)[style];
-			}
-			else if(elem.currentStyle) {
-				if(style === 'opacity') {
-					var filter = elem.currentStyle && elem.currentStyle.filter || elem.style.filter || '', opacity = filter.toLowerCase().match(/opacity=(\d+)/);
-					return (opacity && opacity[1] / 100) || 1;
-				}
-				return elem.currentStyle[style];
-			}
-			else {
+			if(typeof elem.style[style] !== 'undefined' && elem.style[style]) {
 				return elem.style[style];
+			}
+			//window.getComputedStyle return "" result for disconnected elements
+			//use it only for real dom elements
+			else if(window.getComputedStyle) {
+				return window.getComputedStyle(elem, null)[style];
 			}
 		}
 		return element;
@@ -1050,7 +1059,7 @@
 
 	f.val = function(element) {
 		// Return value of the first element
-		var elem = element.length && element[0] || element,
+		var elem = _isArray(element) && element[0] || element,
 			tag = elem.tagName.toLowerCase();
 
 		if(tag === 'input' || tag === 'textarea') {
@@ -1092,7 +1101,7 @@
 	},
 
 	f.serialize = function(element) {
-		var inputs = _find(element.length ? element[0] : element, 'input, select, textarea'),
+		var inputs = _find(element[0], 'input, select, textarea'),
 			length = inputs.length,
 			params = [], i = 0;
 
@@ -1106,6 +1115,7 @@
 				if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
 					continue;
 				}
+
 				var val = f.val(elem);
 
 				if(_isArray(val)) {
@@ -1169,9 +1179,22 @@
 				if(elem.handle) {
 					elem.handle.call(elem, event);
 				}
-
-				if(elem.liveHandler) {
-					elem.liveHandler.call(elem, event);
+				// Check if parent node delegated events handler
+				while(elem = elem.parentNode) {
+					var events = elem.events;
+					if(!events) {
+						continue;
+					}
+					if(events.live && events.live[event.type]) {
+						for(var id in events.live[event.type]) {
+							if(f(events.live[event.type][id].selector)[0] === element[0]) {
+								elem.liveHandler.call(elem, event);
+							}
+						}
+					}
+					if(events[event.type]) {
+						elem.handle.call(elem, event);
+					}
 				}
 			}
 		}
@@ -1198,10 +1221,10 @@
 				this.isDefaultPrevented = _returnTrue;
 			},
 				this.stopPropagation = function() {
-					this.isPropagationStopped = returnTrue;
+					this.isPropagationStopped = _returnTrue;
 				},
 				this.stopImmediatePropagation = function() {
-					this.isImmediatePropagationStopped = returnTrue;
+					this.isImmediatePropagationStopped = _returnTrue;
 				}
 		}
 
@@ -1227,12 +1250,26 @@
 		// text/html - HTML document
 		// application/xml - XML document
 		// image/svg+xml - SVG document
-		return (new DOMParser()).parseFromString(data, type);
+		try {
+			var doc = (new DOMParser()).parseFromString(data, type);
+			if(doc) {
+				return doc;
+			}
+			else {
+				return _document(data.replace(/<\/?body>/gi, ''));
+			}
+		}
+		catch(ex) {
+			return _document(data.replace(/<\/?body>/gi, ''));
+		}
+
 	};
 
 	f.ajax = function(settings) {
+		// Local copy of settings to prevent settings merge
+		var localSettings = f.merge({}, _ajaxSettings);
 		// Make settings an object
-		settings = f.merge(_ajaxSettings, settings) || _ajaxSettings;
+		settings = f.merge(localSettings, settings) || _ajaxSettings;
 
 		// Make type upper case
 		settings.type = settings.type.toUpperCase();
@@ -1257,11 +1294,17 @@
 		xhr.open(settings.type, settings.url, settings.async);
 
 		// Google Chrome and Internet Explorer don't support "json" response
-		if(settings.responseType && settings.responseType == 'json' && (f.browser.msie || f.browser.chrome)) {
+		// Try catch doesn't help
+		if(settings.responseType && settings.responseType === 'json' && (f.browser.msie || f.browser.chrome)) {
 			settings.dataType = settings.responseType;
 		}
 		else {
-			xhr.responseType = settings.responseType;
+			try {
+				xhr.responseType = settings.responseType;
+			}
+			catch(e) {
+				settings.dataType = settings.responseType;
+			}
 		}
 
 		if(settings.contentType) {
@@ -1287,7 +1330,7 @@
 		xhr.onload = function() {
 			var status = this.status;
 			if(status >= 200 && status < 300 || status === 304) {
-				var response = !this.response || settings.dataType ? _handleAjaxResponse.call(this, settings.responseType) : this.response;
+				var response = (!this.response || settings.dataType) ? _handleAjaxResponse.call(this, settings.responseType || settings.dataType) : this.response;
 				settings.success(response, this);
 			}
 			else {
