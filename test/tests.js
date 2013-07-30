@@ -131,6 +131,39 @@ test('f.val(element)', function() {
 	equal(f.val(textarea), 'Value', 'Get textarea value');
 });
 
+test('f.css(element, style, value)', function() {
+	expect(10);
+	f.append(f('body'), '<div class="css"></div>');
+	var css = f('.css');
+	f.css(css, 'position', 'relative');
+	equal(f.css(css, 'position'), 'relative', 'css position relative');
+
+	f.css(css, 'opacity', 0.5);
+	equal(f.css(css, 'opacity'), '0.5', 'css opacity');
+
+	var div = f.create('<div></div>');
+	ok(/auto|/.test(f.css(div, 'height')), 'Check not set height on disconnected node');
+
+	f.css(div, 'height', '33px');
+	equal(f.css(div, 'height'), '33px', 'Check set height on disconnected node');
+
+	div = f.create('<div style="display: none;"><input type="text" style="height:20px;"><textarea style="height:30px"></textarea></div>');
+	equal(f.css(f.find(div, 'input'), 'height'), '20px', 'Check height on hidden input');
+	equal(f.css(f.find(div, 'textarea'), 'height'), '30px', 'Check height on hidden input');
+	equal(f.css(div, 'display'), 'none', 'Check display style on disconnected node');
+
+	f.css(div, 'font-size', '15px');
+	equal(f.css(div, 'font-size'), '15px', 'Check font-size');
+
+	f.css(div, 'height', '100%');
+	equal(f.css(div, 'height'), '100%', 'Check height in percent');
+
+	f.css(f('body'), 'height', '100%');
+	equal(f.css(f('body'), 'height'), '100%', 'Check height in body');
+
+	f.remove(css);
+});
+
 module('DOM Manipulations');
 test('f.isDOM(element)', function() {
 	expect(2);
@@ -200,7 +233,7 @@ test('f.siblings(element, selector)', function() {
 	var elements = f.create('<div class="one"></div><div class="two"></div><div id="three"></div>'),
 		sibling = f(elements[0]);
 
-	equal(f.siblings(sibling).length, 2, 'Get all siblings w\o selector');
+	equal(f.siblings(sibling).length, 2, 'Get all siblings w\\o selector');
 	equal(f.siblings(sibling, '.two').length, 1, 'Get sibling by class selector');
 	equal(f.siblings(sibling, '#three').length, 1, 'Get sibling by id selector');
 	deepEqual(f.siblings(sibling, '.noclass'), [], 'Get empty siblings result');
@@ -218,7 +251,552 @@ test('f.wrap(element, wrapper)', function() {
 
 	div = f.create('<div class="wrap-me"></div>');
 	f.wrap(div, 'div');
-	equal(f.children(div, '.wrap-me').length, 1, 'Wrap with tag name string argument');
+	equal(f.children(f.parent(div), '.wrap-me').length, 1, 'Wrap with tag name string argument');
 
 	deepEqual(f.wrap(f('#noId'), 'div'), [], 'Wrap non existing element');
+});
+
+test('f.unwrap(element)', function() {
+	expect(3);
+	var divs = f.create('<div><div class="child"></div></div>'),
+		child = f.children(divs);
+	f.unwrap(child);
+
+	deepEqual(f.parent(child), [], 'Unwrap element');
+	deepEqual(f.unwrap(child), child, 'Unwrap element w\\o parent');
+
+	divs = f.create('<div class="top-parent"><div><div class="child"></div></div></div>');
+	child = f.find(divs, '.child');
+	f.unwrap(child);
+
+	equal(f.attr(f.parent(child), 'class'), 'top-parent', 'Make sure unwrap remove only parent');
+});
+
+test('f.append(element, children)', function() {
+	expect(4);
+	var child = f.create('<div class="append-child"></div>'),
+		body = f('body');
+	f.append(body, child);
+	equal(f.attr(f.children(body, '.append-child'), 'class'), 'append-child', 'Check appended child');
+
+	var divs = f.create('<div class="wrapper"></div><div class="wrapper"></div><div class="wrapper"></div>');
+	f.append(body, divs);
+	f.append(divs, child);
+	equal(f('.append-child').length, 3, 'Check multi parent append');
+
+	f.append(divs, f.create('<div class="multi-child"></div><div class="multi-child"></div>'));
+	equal(f('.multi-child').length, 6, 'Check multi child, parent append');
+	f.remove('.wrapper');
+
+	f.append(body, '<div class="multi-child"></div><div class="multi-child"></div>');
+	equal(f('.multi-child').length, 2, 'Check dynamically created children append');
+	f.remove('.multi-child');
+});
+
+test('f.insertAfter(element, target)', function() {
+	expect(5);
+	var div = f.create('<div class="after-body"></div>'),
+		body = f('body');
+	f.insertAfter(div, body);
+	equal(f.siblings(body, '.after-body').length, 1, 'Insert single div after body');
+	equal(body[0].nextSibling.className, 'after-body', 'Be sure div inserted next after body');
+
+	f.append(body, '<div class="inserts"></div><div class="inserts"></div>');
+	f.append(body, '<div class="afterTarget"></div><div class="afterTarget"></div><div class="afterTarget"></div>');
+	f.insertAfter(f('.inserts'), f('.afterTarget'));
+	equal(f('.inserts').length, 6, 'Check multi insertAfter');
+
+	f.insertAfter('<div id="dynamic"></div>', body);
+	equal(f('#dynamic').length, 1, 'Check dynamically inserted element');
+	equal(body[0].nextSibling.id, 'dynamic', 'Be sure element inserted next after body');
+	f.remove('.after-body, .inserts, .afterTarget, #dynamic');
+});
+
+test('f.insertBefore(element, target)', function() {
+	expect(5);
+	var div = f.create('<div class="before-body"></div>'),
+		body = f('body');
+	f.insertBefore(div, body);
+	equal(f.siblings(body, '.before-body').length, 1, 'Insert single div before body');
+	equal(body[0].previousSibling.className, 'before-body', 'Be sure div inserted before body');
+
+	f.append(body, '<div class="inserts"></div><div class="inserts"></div>');
+	f.append(body, '<div class="beforeTarget"></div><div class="beforeTarget"></div><div class="beforeTarget"></div>');
+	f.insertBefore(f('.inserts'), f('.beforeTarget'));
+	equal(f('.inserts').length, 6, 'Check multi insertBefore');
+
+	f.insertBefore('<div id="dynamic"></div>', body);
+	equal(f('#dynamic').length, 1, 'Check dynamically inserted element');
+	equal(body[0].previousSibling.id, 'dynamic', 'Be sure element inserted before body');
+	f.remove('.before-body, .inserts, .beforeTarget, #dynamic');
+});
+
+test('f.remove(element)', function() {
+	expect(3);
+	f.append(f('body'), '<div id="remove"></div><div class="multi-remove"></div><div class="multi-remove2"></div><div class="element-remove"></div>');
+	equal(f.remove('#remove').length, 1, 'Remove element by selector');
+	equal(f.remove('.multi-remove, .multi-remove2').length, 2, 'Remove several elements by selector');
+	var removeElement = f('.element-remove');
+	f.remove(removeElement);
+	equal(f('.element-remove').length, 0, 'Remove element via variable');
+});
+
+test('f.clone(element)', function() {
+	expect(1);
+	var body = f('body');
+	f.append(body, '<div class="clone"></div><div class="clone"></div>')
+	var clone = f.clone(f('.clone'));
+	f.append(body, clone);
+	equal(f('.clone').length, 4, 'Clone set of elements');
+	f.remove('.clone');
+});
+
+test('f.find(element, selector)', function() {
+	expect(3);
+	var body = f('body'),
+	elem = f.find(body, '#qunit');
+	equal(f.attr(elem, 'id'), 'qunit', 'Find by id');
+
+	elem = f.find(body, '.test-class');
+	ok(f.hasClass(elem, 'test-class'), 'Find by class');
+
+	elem = f.find(body, '#qunit ol#qunit-tests');
+	equal(f.attr(elem, 'id'), 'qunit-tests', 'Find by query selector');
+});
+
+test('f.create(html)', function() {
+	expect(2);
+	var element = f.create('<div class="parent"><div class="child"></div></div>');
+	equal(element.length, 1, 'Check elements length');
+
+	var child = f.find(element, '.child');
+	equal(f.attr(child, 'class'), 'child', 'Check child by class');
+});
+
+test('f.html(element, html)', function() {
+	expect(2);
+	var div = f.create('<div id="textText">Test text</div>');
+	f.html(div, 'new html text');
+	equal(f.html(div), 'new html text', 'Check set and get html text');
+
+	f.html(div, '<div class="new-child"></div>');
+	equal(f.children(div, '.new-child').length, 1, 'Check set children');
+});
+
+test('f.contents(element)', function() {
+	expect(2);
+	var content = f.contents(f('#iframe')),
+	iBody = f.find(content, 'body');
+
+	equal(f.children(iBody).length, 2, 'Check iframe contents');
+	ok(f.contents(iBody).length, 'Check element contents');
+
+	f.remove('#iframe');
+});
+
+test('f.contains(context, element)', function() {
+	expect(2);
+	var html = document.documentElement,
+	node = f.create('<div></div>');
+	ok(!f.contains(html, node[0]), 'This is disconnected node');
+
+	node = f('#qunit');
+	ok(f.contains(html, node[0]), 'This is existing node');
+});
+
+test('f.text(element, text)', function() {
+	expect(2);
+	f.append(f('body'), '<div id="testText">Text node <div>Element text</div></div>');
+	var element = f('#testText');
+
+	equal(f.text([element[0].childNodes[0]]).trim(), 'Text node', 'Check text node text');
+	equal(f.text(element).trim(), 'Text node Element text', 'Check element text content');
+
+	f.remove(element);
+});
+
+test('f.offset(element)', function() {
+	expect(4);
+	f.append(f('body'), '<div id="abs" style="height: 10px; width: 10px; position: absolute; left: 24px; top:53px;"></div>');
+	var coords = f.offset('#abs');
+	equal(coords.left, 24, 'Left position');
+	equal(Math.round(coords.top), 53, 'Left position');
+
+	var div = f.create('<div></div>'),
+	divCoords = f.offset(div);
+	equal(divCoords.left, 0, 'Check disconnected node left position');
+	equal(divCoords.top, 0, 'Check disconnected node top position');
+
+	f.remove('#abs');
+});
+
+test('f.serialize(element)', function() {
+	expect(7);
+	var body = f('body'),
+
+	form = f.create('<form><input type="text" name="first_name" value="My name"><input type="checkbox" value="1" checked name="agree"></form>');
+	f.append(body, form);
+	equal(f.serialize(form), 'first_name=My+name&agree=1', 'form with selected checkbox');
+	f.remove(form);
+
+	form = f.create('<form><input type="text" name="first_name" value="My name"><input type="checkbox" value="1" name="agree"></form>');
+	f.append(body, form);
+	equal(f.serialize(form), 'first_name=My+name', 'Form with unselected checkbox');
+	f.remove(form);
+
+	form = f.create('<form><input type="text" name="first_name" value="My name" disabled><input type="checkbox" value="1" checked name="agree"></form>');
+	f.append(body, form);
+	equal(f.serialize(form), 'agree=1', 'Form with disabled input');
+	f.remove(form);
+
+	form = f.create('<form><input type="text" name="first_name" value="My name" disabled><input type="checkbox" value="1" name="agree"></form>');
+	f.append(body, form);
+	equal(f.serialize(form), '', 'Form with disabled input and unchecked checkbox');
+	f.remove(form);
+
+	form = f.create('<form><input type="text" name="first_name" value="My name"><input type="radio" value="1" checked name="agree"></form>');
+	f.append(body, form);
+	equal(f.serialize(form), 'first_name=My+name&agree=1', 'Form with input and radio button');
+	f.remove(form);
+
+	form = f.create('<form><select multiple name="users[]"><option value="name1" selected>Name1</option><option value="name2">Name2</option><option value="name3" selected>Name3</option></select></form>');
+	f.append(body, form);
+	equal(f.serialize(form), 'users%5B%5D=name1&users%5B%5D=name3', 'Form multiple select');
+	f.remove(form);
+
+	form = f.create('<div><select name="user"><option value="name1">Name1</option><option value="name2" selected>Name2</option><option value="name3">Name3</option></select></div>');
+	f.append(body, form);
+	equal(f.serialize(form), 'user=name2', 'Serialize some context form element');
+	f.remove(form);
+});
+
+test('f.domParser(data, type)', function() {
+	expect(7);
+	var htmlDoc = f.domParser('<body><div class="overlay">Text node</div></body>', 'text/html');
+		var overlay = f.find([htmlDoc], '.overlay');
+	equal(f.attr(overlay, 'class'), 'overlay', 'Check on child existing');
+	equal(f.contents(overlay)[0].nodeValue, 'Text node', 'Check on text node');
+
+	var xmlDoc = f.domParser('<?xml version="1.0"?><note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don\'t forget me this weekend!</body></note>', 'application/xml'),
+	note = f.find([xmlDoc], 'note');
+	equal(note.length, 1, 'Make sure we got XML document');
+
+	var from = f.find(note, 'from');
+	equal(f.text(from).trim(), 'Jani', 'Get xml node text');
+
+	var svgDoc = f.domParser('<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><circle cx="100" cy="50" r="40" stroke="black"	stroke-width="2" fill="red" /></svg>', 'image/svg+xml'),
+		svg = f.find([svgDoc], 'svg');
+	equal(svg.length, 1, 'Get svg tag');
+	equal(f.attr(svg, 'version'), '1.1', 'Check svg by attribute');
+
+	var circle = f.find(svg, 'circle');
+	equal(f.attr(circle, 'cx'), '100', 'Check circle cx attribute');
+});
+
+module('Events');
+test('f.on(element, type, selector, handler)', function() {
+	expect(6);
+	var target = f.create('<div id="target"></div>'),
+		flag = false,
+		clicks = [];
+	f.append(f('body'), target);
+	f.on(target, 'click', function() {
+		flag = true;
+	});
+	f.trigger(target, 'click');
+	ok(flag, 'Check event execution');
+
+	f.on(target, 'click', function() {
+		clicks.push('one');
+	});
+	f.on(target, 'click', function() {
+		clicks.push('two');
+	});
+	f.trigger(target, 'click');
+	equal(clicks.length, 2, 'Check count of executed handlers');
+	equal(clicks[1], 'two', 'Check sequence of executed handlers');
+
+	var parent = f.create('<div class="parent"><div class="child"></div></div>'),
+	child = f.find(parent, '.child'),
+	delegated = false,
+	bubble = false;
+
+	f.append(f('body'), parent);
+	f.on(parent, 'click', function() {
+		bubble = true;
+	});
+	f.on(parent, 'click', '.child', function() {
+		delegated = true;
+	});
+
+	f.trigger(child, 'click');
+	ok(delegated, 'Check delegated event');
+	ok(bubble, 'Parent handlers execution');
+
+	var elements = f.create('<div class="target"></div><div class="target"></div>'),
+		clicks = [];
+	f.append(f('body'), elements);
+	f.on(elements, 'click', function() {
+		clicks.push(1);
+	});
+	f.trigger(elements, 'click');
+	equal(clicks.length, 2, 'Check multi trigger');
+
+	f.remove(parent);
+	f.remove(target);
+	f.remove(elements);
+});
+
+test('f.off(element, type, selector, handler)', function() {
+	expect(5);
+	var div = f.create('<div class="div"></div>'),
+		off = true,
+		off2 = true;
+	f.on(div, 'click', function() {
+		off = false;
+	});
+	f.off(div, 'click');
+	f.trigger(div, 'click');
+	ok(off, 'Event has been removed');
+
+	function handler() {
+		off = false;
+	}
+	function handler2() {
+		off2 = false;
+	}
+	f.on(div, 'click', handler);
+	f.on(div, 'click', handler2);
+	f.off(div, 'click', handler);
+	f.trigger(div, 'click');
+
+	ok(off, 'Event has been removed by handler');
+	ok(!off2, 'Second event was executed');
+
+	f.on(div, 'click', handler);
+	f.off(div, 'click');
+	f.trigger('click');
+	ok(off && !off2, 'All events has been removed by event type');
+
+	f.on(div, 'mouseover', handler);
+	f.on(div, 'click', handler2);
+	f.off(div);
+	f.trigger('mouseover');
+	f.trigger('click');
+	ok(off && !off2, 'All events has been removed');
+});
+
+test('f.trigger(element, event)', function() {
+	expect(4);
+	var div = f.create('<div></div>'),
+		click = false;
+	f.on(div, 'click', function() {
+		click = true;
+	});
+	f.trigger(div, 'click');
+	ok(click, 'Trigger simple event');
+
+	div = f.create('<div class="trigger"></div><div class="trigger"></div>');
+	var clicks = [];
+	f.on(div, 'click', function() {
+		clicks.push(1);
+	});
+	f.trigger(div, 'click');
+	equal(clicks.length, 2, 'Multi trigger');
+
+	div = f.create('<div class="wrapper"><div class="child"></div></div>');
+
+	var body = f('body'),
+		delegated = false,
+		bubble = false;
+
+	f.append(f('body'), div);
+	f.on(div, 'click', '.child', function() {
+		delegated = true;
+	});
+	f.on(div, 'click', function() {
+		bubble = true;
+	});
+
+	f.trigger(f('.child'), 'click');
+	ok(delegated, 'Run delegated method');
+	ok(bubble, 'Trigger run event propagation');
+
+	f.remove(div);
+});
+
+test('f.event(type, props)', function() {
+	expect(3);
+	var event = f.event(null, {ctrlKey: true, type: 'mouseover'});
+	equal(event.type, 'mouseover', 'Check custom event type property');
+	equal(event.ctrlKey, true, 'Check custom event ctrlKey property');
+
+	event = f.event({type: 'click', shiftKey: true});
+	equal(event.type, 'click', 'Check method return real event property');
+});
+
+module('AJAX');
+test('f.isJSON(json)', function() {
+	expect(6);
+	ok(f.isJSON('[]'), 'Check empty array');
+	ok(f.isJSON('[1,2,3]'), 'Check array with');
+	ok(f.isJSON('[1,2,"text"]'), 'Check array with different type value');
+	ok(f.isJSON('{"1":1,"2":"text","key":[]}'), 'Check object with different type value');
+	ok(!f.isJSON("{'key':'value'}"), 'All json data should be in "');
+	ok(!f.isJSON(""), 'Check json for empty string');
+});
+
+asyncTest('f.ajax(settings) - Simple request', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'ajax.php',
+		success: function(data) {
+			if(data === 'done') {
+				ok(true, 'Simple ajax request and check success method');
+				start();
+			}
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - Send data object', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'ajax.php',
+		data: {key: 22},
+		success: function(data) {
+			equal(data, '22', 'Check ajax data');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - Send data string', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'ajax.php',
+		data: 'key=text',
+		success: function(data) {
+			equal(data, 'text', 'Check ajax data in text form');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - Default responseType', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'ajax.php',
+		data: 'key=text',
+		success: function(data) {
+			strictEqual(typeof data, 'string', 'Default repsoneType is "text"');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - ResponseType "json"', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'ajax.php',
+		data: 'response=json',
+		responseType: 'json',
+		success: function(data) {
+			ok(f.isObject(data), 'Check responseType "json"');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - ResponseType "document"', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'xml.xml',
+		responseType: 'document',
+		success: function(doc) {
+			equal(doc.nodeType, 9, 'Check responseType "document"');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - Error callback', 2, function() {
+	f.ajax({
+		type: 'post',
+		url: 'ajax.php',
+		data: 'error=1',
+		error: function(xhr) {
+			equal(xhr.status, 404, 'Check error callback');
+			equal(xhr.statusText, 'Not Found', 'Check error statusText');
+			start();
+		}
+	})
+});
+
+asyncTest('f.ajax(settings) - Download progress callback', 1, function() {
+	var downSteps = 0;
+	f.ajax({
+		type: 'post',
+		url: 'logo.png',
+		downProgress: function(loaded, total) {
+			downSteps++;
+		},
+		success: function() {
+			ok(downSteps > 0, 'Check download progress');
+			start();
+		}
+	});
+});
+
+/*asyncTest('f.ajax(settings) - Upload progress callback', 1, function() {
+	var upSteps = 0;
+	f.ajax({
+		type: 'post',
+		url: 'str=LSKJDFLJSFOSLKJF@*$(J(F*DSJF(*JF(SJFSF(JSF(JSD(FJ**489348jDS(F**8893439j(*JSDF(Jkjaslfj98(*$##($MKSJDFLJ(*$9843984KLKJSDFLKJ(*$(#*SSOUH',
+		upProgress: function(loaded, total) {
+			upSteps++;
+		},
+		success: function() {
+			ok(upSteps > 0, 'Check download progress');
+			start();
+		}
+	});
+});*/
+
+asyncTest('f.ajaxSettings(options)', 1, function() {
+	f.ajaxSettings({
+		type: 'post'
+	});
+	f.ajax({
+		url: 'ajax.php',
+		data: {post: 1},
+		success: function(data) {
+			equal(data, 'post', 'Check ajax global settings');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - ResponseType "arraybuffer"', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'logo.png',
+		responseType: 'arraybuffer',
+		success: function(buffer) {
+			equal(buffer.byteLength, 2641, 'Check responseType "blob"');
+			start();
+		}
+	});
+});
+
+asyncTest('f.ajax(settings) - ResponseType "blob"', 1, function() {
+	f.ajax({
+		type: 'get',
+		url: 'logo.png',
+		responseType: 'blob',
+		success: function(blob) {
+			equal(blob.type, 'image/png', 'Check responseType "blob"');
+			start();
+		}
+	});
 });
