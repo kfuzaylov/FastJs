@@ -1275,7 +1275,7 @@
 		settings.type = settings.type.toUpperCase();
 
 		// Set data object to send them as POST or GET params
-		if(f.isObject(settings.data)) {
+		if(f.isObject(settings.data) && !settings.dataFile) {
 			var params = '';
 			for(var key in settings.data) {
 				params += encodeURIComponent(key) + '=' + encodeURIComponent(settings.data[key]);
@@ -1307,7 +1307,7 @@
 			}
 		}
 
-		if(settings.contentType) {
+		if(settings.contentType && !settings.dataFile) {
 			xhr.setRequestHeader('Content-Type', settings.contentType);
 		}
 
@@ -1373,8 +1373,8 @@
 		return target;
 	};
 
-	f.error = function(msg) {
-		throw new Error(msg);
+	f.isArray = function(arr) {
+		return _isArray(arr);
 	};
 
 	f.cookie = function(name, value, props, secure) {

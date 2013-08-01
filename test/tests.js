@@ -733,6 +733,100 @@ asyncTest('f.ajax(settings) - Error callback', 2, function() {
 	})
 });
 
+asyncTest('f.ajaxSettings(options)', 1, function() {
+	f.ajaxSettings({
+		type: 'post'
+	});
+	f.ajax({
+		url: 'ajax.php',
+		data: {post: 1},
+		success: function(data) {
+			equal(data, 'post', 'Check ajax global settings');
+			start();
+		}
+	});
+});
+
+module('Support');
+
+test('f.merge()', function() {
+	expect(4);
+	var merge = f.merge([1,3], [5,2]);
+	equal(merge[2], 5, 'Check two arrays merge');
+
+	merge = f.merge([], [23, 'text'], [[]]);
+	ok(Array.isArray(merge[2]), 'Check three array merge');
+
+	merge = f.merge({key1: 1},{key2: 2});
+	equal(merge.key2, 2, 'Check two object merge');
+
+	merge = f.merge({key1: 1},{key1: 2});
+	equal(merge.key1, 2, 'Check object duplicate keys overwrite previous');
+});
+
+test('f.isArray(arr)', function() {
+	expect(2);
+	ok(f.isArray([]), 'Is Array');
+	ok(!f.isArray({}), 'Is not an Array');
+});
+
+test('f.isObject(obj)', function() {
+	expect(2);
+	ok(f.isObject({}), 'Is Object');
+	ok(!f.isObject([]), 'Is not an Object');
+});
+
+test('f.cookie(name, value, props, secure)', function() {
+	expect(5);
+	f.cookie('name', 'My name');
+	equal(f.cookie('name'), 'My name', 'Check simple cookie set');
+
+	f.cookie('name2', 'My name2', {path: '/test/fakepath'});
+	equal(f.cookie('name2'), undefined, 'Cookie is set for another path');
+
+	f.cookie('name', null, {expires:-1});
+	equal(f.cookie('name'), undefined, 'Remove cookie');
+
+	f.cookie('name2', null, {expires:-1});
+	equal(f.cookie('name2'), undefined, 'Cookie from another path is not removable');
+
+	f.cookie('name2', 'Custom', {expires:-1});
+	equal(f.cookie('name2'), undefined, 'Cookie from another path is not editable');
+});
+
+asyncTest('f.cookie(name, value, pros, secure)', 1, function() {
+	f.cookie('expired', '10 seconds', {expires: 2});
+	setTimeout(function() {
+		equal(f.cookie('expired'), undefined, 'Set cookie for 10 seconds');
+		start();
+	}, 2500);
+});
+
+module('AJAX');
+asyncTest('f.ajax(settings) - Upload progress callback', 1, function() {
+	f.append(f('body'), '<input type="file" id="file">');
+	var upSteps = 0,
+	file = f('#file');
+	f.on(file, 'change', function() {
+		var img = this.files[0];
+		f.ajax({
+			type: 'post',
+			url: 'ajax.php',
+			data: img,
+			dataFile: true,
+			upProgress: function(a, b) {
+				upSteps++;
+			},
+			success: function(data) {
+				ok(upSteps > 0, 'Check upload progress');
+				f.remove(file);
+				start();
+			}
+		});
+	});
+	file[0].click();
+});
+
 asyncTest('f.ajax(settings) - Download progress callback', 1, function() {
 	var downSteps = 0;
 	f.ajax({
@@ -743,35 +837,6 @@ asyncTest('f.ajax(settings) - Download progress callback', 1, function() {
 		},
 		success: function() {
 			ok(downSteps > 0, 'Check download progress');
-			start();
-		}
-	});
-});
-
-/*asyncTest('f.ajax(settings) - Upload progress callback', 1, function() {
-	var upSteps = 0;
-	f.ajax({
-		type: 'post',
-		url: 'str=LSKJDFLJSFOSLKJF@*$(J(F*DSJF(*JF(SJFSF(JSF(JSD(FJ**489348jDS(F**8893439j(*JSDF(Jkjaslfj98(*$##($MKSJDFLJ(*$9843984KLKJSDFLKJ(*$(#*SSOUH',
-		upProgress: function(loaded, total) {
-			upSteps++;
-		},
-		success: function() {
-			ok(upSteps > 0, 'Check download progress');
-			start();
-		}
-	});
-});*/
-
-asyncTest('f.ajaxSettings(options)', 1, function() {
-	f.ajaxSettings({
-		type: 'post'
-	});
-	f.ajax({
-		url: 'ajax.php',
-		data: {post: 1},
-		success: function(data) {
-			equal(data, 'post', 'Check ajax global settings');
 			start();
 		}
 	});
