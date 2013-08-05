@@ -749,6 +749,41 @@ asyncTest('f.ajaxSettings(options)', 1, function() {
 
 module('Support');
 
+test('f.extend(key, value)', function() {
+	expect(4);
+	f.extend('custom', 1);
+	equal(typeof f.custom, 'number', 'FastJs has been extended');
+	equal(f.custom, 1, 'Check extended property');
+
+	f.extend('custom', function() { return 'result'; });
+	equal(typeof f.custom, 'function', 'Property has been overwritten');
+	equal(f.custom(), 'result', 'Check extended property');
+});
+
+test('f.each(object, handler)', function() {
+	expect(4);
+	var obj = {key1: 'val1', key2: 'val2'},
+		arr = [1, 2, 'hello', [], {}],
+		length = 0;
+	f.each(obj, function(key, val) {
+		if(key === 'key1') {
+			equal(this, 'val1', 'Check this in handler');
+		}
+	});
+
+	f.each(arr, function(index, val) {
+		length++;
+		if(index == 1) {
+			equal(this, 2, 'Check this in handler');
+		}
+		else if(index == 3) {
+			ok(f.isArray(this), 'Val is Array');
+		}
+	});
+
+	equal(length, arr.length, 'Make sure f.each goes through all array elements');
+});
+
 test('f.merge()', function() {
 	expect(4);
 	var merge = f.merge([1,3], [5,2]);
@@ -771,9 +806,31 @@ test('f.isArray(arr)', function() {
 });
 
 test('f.isObject(obj)', function() {
-	expect(2);
+	expect(3);
 	ok(f.isObject({}), 'Is Object');
+	ok(f.isObject(f.merge({},{})), 'f.merge returns an Object');
 	ok(!f.isObject([]), 'Is not an Object');
+});
+
+test('f.isString(str)', function() {
+	expect(3);
+	ok(f.isString('hello'), 'Is String');
+	ok(f.isString('hello' + 32), 'Is String');
+	ok(!f.isString(2), 'Is not a String');
+});
+
+test('f.isNumber(num)', function() {
+	expect(3);
+	ok(f.isNumber(323), 'Is Number');
+	ok(f.isNumber(32.3323), 'Is Number');
+	ok(!f.isNumber('hello'), 'Is not a Number');
+});
+
+test('f.isFunction(fn)', function() {
+	expect(3);
+	ok(f.isFunction(function(){}), 'Is Function');
+	ok(!f.isFunction(new function(){}), 'Is not a Function');
+	ok(!f.isFunction({}), 'Is not a Function');
 });
 
 test('f.cookie(name, value, props, secure)', function() {

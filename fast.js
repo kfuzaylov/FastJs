@@ -24,7 +24,7 @@
 		_isTag = /^[a-z0-9]+$/i,
 
 	// Object types to create type check methods
-		_objectTypes = ['Object', 'HTMLCollection', 'Function', 'String', 'Number'],
+		_objectTypes = ['Object', 'Function', 'String', 'Number'],
 
 	// Idetifier for each event handler
 		_handlerId = 0,
@@ -562,7 +562,7 @@
 						return Object.prototype.toString.call(obj) === '[object ' + type + ']';
 					}
 					else {
-						// Otherwise use typeof, because it much faster
+						// Otherwise use typeof, because it is faster
 						return typeof obj === type.toLowerCase();
 					}
 				}
