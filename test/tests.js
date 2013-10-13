@@ -396,12 +396,12 @@ test('f.contents(element)', function() {
 
 test('f.contains(context, element)', function() {
 	expect(2);
-	var html = document.documentElement,
+	var html = [document.documentElement],
 	node = f.create('<div></div>');
-	ok(!f.contains(html, node[0]), 'This is disconnected node');
+	ok(!f.contains(html, node), 'This is disconnected node');
 
 	node = f('#qunit');
-	ok(f.contains(html, node[0]), 'This is existing node');
+	ok(f.contains(html, node), 'This is existing node');
 });
 
 test('f.text(element, text)', function() {

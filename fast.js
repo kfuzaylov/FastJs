@@ -579,6 +579,10 @@
 	};
 
 	f.parents = function(element, selector) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			parents = [],
 			i = 0;
@@ -590,6 +594,10 @@
 	};
 
 	f.parent = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			parents = [],
 			parent,
@@ -609,6 +617,10 @@
 			return [];
 		}
 
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			closest = [],
 			i = 0;
@@ -620,6 +632,10 @@
 	};
 
 	f.children = function(element, selector) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			children = [],
 			i = 0;
@@ -631,6 +647,10 @@
 	};
 
 	f.siblings = function(element, selector) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			siblings = [],
 			i = 0;
@@ -653,6 +673,10 @@
 	};
 
 	f.attr = function(element, name, value) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		name = name.trim();
 
 		if(value) {
@@ -670,6 +694,10 @@
 	};
 
 	f.removeAttr = function(element, name) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			i = 0;
 		for(; i < length; i++) {
@@ -679,6 +707,10 @@
 	};
 
 	f.wrap = function(element, wrapper) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var origins = [],
 		length = element.length,
 			i = 0;
@@ -695,6 +727,10 @@
 	};
 
 	f.unwrap = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			i = 0;
 
@@ -718,6 +754,10 @@
 	};
 
 	f.append = function(element, children) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		if(typeof children === 'string') {
 			children = f.create(children);
 		}
@@ -728,12 +768,13 @@
 		for(; i < length; i++) {
 			// Clone children until the last iteration
 			var child = i !== (length - 1) ? f.clone(children) : children,
-			elem = element[i],
+				elem = element[i],
 
-			// Make sure this is array
-			// Get error when child is a text node, because it has length property
+				// Make sure this is array
+				// Get error when child is a text node, because it has length property
 				len = _isArray(child) && child.length,
 				c = 0;
+
 			if(len) {
 				for(; c < len; c++) {
 					elem.appendChild(child[c]);
@@ -750,6 +791,11 @@
 		if(typeof element === 'string') {
 			element = f.create(element);
 		}
+
+		if(typeof target === 'string') {
+			target = f(target);
+		}
+
 		var length = target.length,
 			i = 0;
 
@@ -786,6 +832,11 @@
 		if(typeof element === 'string') {
 			element = f.create(element);
 		}
+
+		if(typeof target === 'string') {
+			target = f(target);
+		}
+
 		var length = target.length,
 			i = 0;
 
@@ -828,6 +879,10 @@
 	};
 
 	f.clone = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var collection = [],
 		length = element.length,
 		i = 0;
@@ -839,6 +894,10 @@
 	};
 
 	f.find = function(element, selector) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var collection = [],
 			result,
 			length = element.length,
@@ -868,6 +927,10 @@
 
 	f.html = function(element, html) {
 		if(html) {
+			if(typeof element === 'string') {
+				element = f(element);
+			}
+
 			var length = element.length,
 			i = 0;
 
@@ -883,6 +946,10 @@
 	};
 
 	f.contents = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			result = [],
 			i = 0;
@@ -899,6 +966,17 @@
 	};
 
 	f.contains = function(context, element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
+		if(typeof context === 'string') {
+			context = f(context);
+		}
+
+		context = context[0];
+		element = element[0];
+
 		if(element) {
 			while(element = element.parentNode) {
 				if(element === context) {
@@ -910,6 +988,10 @@
 	};
 
 	f.text = function(element, text) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 		result = '',
 		hasText = text !== undefined,
@@ -941,8 +1023,9 @@
 		if(typeof element === 'string') {
 			element = f(element);
 		}
+
 		// Make sure this is not a disconnected DOM node
-		if(!f.contains(document.documentElement, element[0])) {
+		if(!f.contains([document.documentElement], element)) {
 			return {left: 0, top: 0};
 		}
 
@@ -956,6 +1039,10 @@
 	};
 
 	f.addClass = function(element, names) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			names = names.split(/\s/),
 			len = names.length,
@@ -977,6 +1064,10 @@
 	};
 
 	f.removeClass = function(element, names) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			names = names ? names.split(/\s/) : [],
 			len = names.length,
@@ -1002,10 +1093,18 @@
 	};
 
 	f.hasClass = function(element, name) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		return (' ' + (element[0] || element).className + ' ').indexOf(' ' + name + ' ') > -1;
 	};
 
 	f.toggleClass = function(element, name) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			i = 0;
 
@@ -1025,6 +1124,10 @@
 	};
 
 	f.css = function(element, style, value) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			i = 0;
 
@@ -1058,6 +1161,10 @@
 	};
 
 	f.val = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		// Return value of the first element
 		var elem = _isArray(element) && element[0] || element,
 			tag = elem.tagName.toLowerCase();
@@ -1101,6 +1208,10 @@
 	},
 
 	f.serialize = function(element) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var inputs = _find(element[0], 'input, select, textarea'),
 			length = inputs.length,
 			params = [], i = 0;
@@ -1136,6 +1247,10 @@
 
 	//------------- Events -----------------
 	f.on = function(element, type, selector, handler) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		// Use selector for live event handler
 		if(!handler) {
 			handler = selector;
@@ -1150,6 +1265,10 @@
 	};
 
 	f.off = function(element, type, selector, handler) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		if(f.isFunction(selector) || selector === undefined) {
 			handler = selector;
 			selector = undefined;
@@ -1168,6 +1287,10 @@
 	};
 
 	f.trigger = function(element, event) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
 		var length = element.length,
 			elem, i = 0;
 
@@ -1179,6 +1302,7 @@
 				if(elem.handle) {
 					elem.handle.call(elem, event);
 				}
+
 				// Check if parent node delegated events handler
 				while(elem = elem.parentNode) {
 					var events = elem.events;
@@ -1373,8 +1497,8 @@
 		return target;
 	};
 
-	f.isArray = function(arr) {
-		return _isArray(arr);
+	f.isArray = function(obj) {
+		return _isArray(obj);
 	};
 
 	f.cookie = function(name, value, props, secure) {
