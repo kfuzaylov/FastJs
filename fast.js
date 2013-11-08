@@ -712,7 +712,7 @@
 		}
 
 		var origins = [],
-		length = element.length,
+			length = element.length,
 			i = 0;
 
 		for(; i < length; i++) {
@@ -770,8 +770,8 @@
 			var child = i !== (length - 1) ? f.clone(children) : children,
 				elem = element[i],
 
-				// Make sure this is array
-				// Get error when child is a text node, because it has length property
+			// Make sure this is array
+			// Get error when child is a text node, because it has length property
 				len = _isArray(child) && child.length,
 				c = 0;
 
@@ -782,6 +782,40 @@
 			}
 			else {
 				elem.appendChild(child);
+			}
+		}
+		return element;
+	};
+
+	f.prepend = function(element, children) {
+		if(typeof element === 'string') {
+			element = f(element);
+		}
+
+		if(typeof children === 'string') {
+			children = f.create(children);
+		}
+
+		var length = element.length,
+			i = 0;
+
+		for(; i < length; i++) {
+			// Clone children until the last iteration
+			var child = i !== (length - 1) ? f.clone(children) : children,
+				elem = element[i],
+
+			// Make sure this is array
+			// Get error when child is a text node, because it has length property
+				len = _isArray(child) && child.length,
+				c = 0;
+
+			if(len) {
+				for(; c < len; c++) {
+					elem.insertBefore(child[c], elem.firstChild);
+				}
+			}
+			else {
+				elem.insertBefore(child, elem.firstChild);
 			}
 		}
 		return element;
@@ -884,8 +918,8 @@
 		}
 
 		var collection = [],
-		length = element.length,
-		i = 0;
+			length = element.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			collection.push(element[i].cloneNode(true));
@@ -912,12 +946,12 @@
 
 	f.create = function(html) {
 		var fragment = document.createDocumentFragment(),
-		tempNode = document.createElement('div');
+			tempNode = document.createElement('div');
 		tempNode.innerHTML = html;
 
 		var children = tempNode.childNodes,
-		length = children.length,
-		i = 0;
+			length = children.length,
+			i = 0;
 
 		for(; i < length; i++) {
 			fragment.appendChild(children[0]);
@@ -932,7 +966,7 @@
 			}
 
 			var length = element.length,
-			i = 0;
+				i = 0;
 
 			for(; i < length; i++) {
 				var elem = element[i];
@@ -993,9 +1027,9 @@
 		}
 
 		var length = element.length,
-		result = '',
-		hasText = text !== undefined,
-		i = 0;
+			result = '',
+			hasText = text !== undefined,
+			i = 0;
 
 		for(; i < length; i++) {
 			var elem = element[i];
@@ -1030,7 +1064,7 @@
 		}
 
 		var box = element[0].getBoundingClientRect(),
-		docElem = document.documentElement;
+			docElem = document.documentElement;
 
 		return {
 			left: box.left + window.pageXOffset - docElem.clientLeft,
@@ -1207,43 +1241,43 @@
 		}
 	},
 
-	f.serialize = function(element) {
-		if(typeof element === 'string') {
-			element = f(element);
-		}
+		f.serialize = function(element) {
+			if(typeof element === 'string') {
+				element = f(element);
+			}
 
-		var inputs = _find(element[0], 'input, select, textarea'),
-			length = inputs.length,
-			params = [], i = 0;
+			var inputs = _find(element[0], 'input, select, textarea'),
+				length = inputs.length,
+				params = [], i = 0;
 
-		for(; i < length; i++) {
-			var elem = inputs[i];
+			for(; i < length; i++) {
+				var elem = inputs[i];
 
-			// Handle only enabled elements with name
-			if(elem.name && !elem.disabled) {
+				// Handle only enabled elements with name
+				if(elem.name && !elem.disabled) {
 
-				// Don't handle unchecked radio/checkbox inputs
-				if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
-					continue;
-				}
+					// Don't handle unchecked radio/checkbox inputs
+					if(elem.tagName.toLowerCase() === 'input' && (elem.type === 'radio' || elem.type === 'checkbox') && !elem.checked) {
+						continue;
+					}
 
-				var val = f.val(elem);
+					var val = f.val(elem);
 
-				if(_isArray(val)) {
-					var c = 0,
-						len = val.length;
+					if(_isArray(val)) {
+						var c = 0,
+							len = val.length;
 
-					for(; c < len; c++) {
-						params.push(encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]));
+						for(; c < len; c++) {
+							params.push(encodeURIComponent(elem.name) + '=' + encodeURIComponent(val[c]));
+						}
+					}
+					else {
+						params.push(encodeURIComponent(elem.name) + '=' + encodeURIComponent(val));
 					}
 				}
-				else {
-					params.push(encodeURIComponent(elem.name) + '=' + encodeURIComponent(val));
-				}
 			}
-		}
-		return params.join('&').replace(/%20/g, '+');
-	};
+			return params.join('&').replace(/%20/g, '+');
+		};
 
 	//------------- Events -----------------
 	f.on = function(element, type, selector, handler) {
@@ -1497,9 +1531,7 @@
 		return target;
 	};
 
-	f.isArray = function(obj) {
-		return _isArray(obj);
-	};
+	f.isArray = Array.isArray;
 
 	f.cookie = function(name, value, props, secure) {
 		// Set or delete cookie
