@@ -1,6 +1,9 @@
 /*
- * FastJs v1.0
+ * FastJs JavaScript Framework v1.0
  * http://fastjs.net
+ *
+ * Copyright 2013. Released under the Creative Commons (CC) license
+ * http://fastjs.net/license
  *
  * Author: Kadir A. Fuzaylov
  */
