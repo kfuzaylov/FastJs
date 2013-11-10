@@ -293,6 +293,27 @@ test('f.append(element, children)', function() {
 	f.remove('.multi-child');
 });
 
+test('f.prepend(element, children)', function() {
+	expect(4);
+	var child = f.create('<div class="prepend-child"></div>'),
+		body = f('body');
+	f.prepend(body, child);
+	equal(f.attr(f.children(body, '.prepend-child'), 'class'), 'prepend-child', 'Check prepended child');
+
+	var divs = f.create('<div class="wrapper"></div><div class="wrapper"></div><div class="wrapper"></div>');
+	f.prepend(body, divs);
+	f.prepend(divs, child);
+	equal(f('.prepend-child').length, 3, 'Check multi parent append');
+
+	f.prepend(divs, f.create('<div class="multi-child"></div><div class="multi-child"></div>'));
+	equal(f('.multi-child').length, 6, 'Check multi child, parent prepend');
+	f.remove('.wrapper');
+
+	f.prepend(body, '<div class="multi-child"></div><div class="multi-child"></div>');
+	equal(f('.multi-child').length, 2, 'Check dynamically created children prepend');
+	f.remove('.multi-child');
+});
+
 test('f.insertAfter(element, target)', function() {
 	expect(5);
 	var div = f.create('<div class="after-body"></div>'),
