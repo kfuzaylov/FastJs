@@ -72,7 +72,7 @@ test('f.addClass(element, className)', function() {
 });
 
 test('f.removeClass(element, className)', function() {
-	expect(3);
+	expect(4);
 	var div = f(document.createElement('div'));
 
 	f.addClass(div, 'one two');
@@ -85,6 +85,10 @@ test('f.removeClass(element, className)', function() {
 
 	f.removeClass(div);
 	equal(f.attr(div, 'class'), '', 'Remove all classes and no extra spaces');
+
+	f.addClass(div, 'one');
+	f.removeClass(div, 'two');
+	equal(f.attr(div, 'class'), 'one', 'Remove non existing class');
 });
 
 test('f.hasClass(element, name)', function() {

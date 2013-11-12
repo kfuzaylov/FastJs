@@ -1120,7 +1120,7 @@
 				elemClass = elemClass.replace(regExp, ' ');
 			}
 
-			if(elem.className == elemClass) {
+			if(elem.className == elemClass && !len) {
 				elemClass = '';
 			}
 
