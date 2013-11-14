@@ -1471,6 +1471,8 @@
 		if(settings.contentType && !settings.dataFile) {
 			xhr.setRequestHeader('Content-Type', settings.contentType);
 		}
+		
+		xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
 		if(settings.downProgress) {
 			xhr.onprogress = function(e) {
