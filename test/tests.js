@@ -688,7 +688,7 @@ asyncTest('f.ajax(settings) - Send data object', 1, function() {
 	f.ajax({
 		type: 'get',
 		url: 'ajax.php',
-		data: {key: 22},
+		data: {key: 22, key44: 'abc'},
 		success: function(data) {
 			equal(data, '22', 'Check ajax data');
 			start();

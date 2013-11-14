@@ -1,5 +1,5 @@
 /*
- * FastJs JavaScript Framework v1.0
+ * FastJs JavaScript Framework v1.0.1
  * http://fastjs.net
  *
  * Copyright 2013. Released under the Creative Commons (CC) license
@@ -511,7 +511,7 @@
 	window.addEventListener('load', _triggerReadyCallback, false);
 
 	// Current version of FastJs
-	f.version = '1.0';
+	f.version = '1.0.1';
 
 	// Set browser info to browser property
 	f.browser = _detectBrowser();
