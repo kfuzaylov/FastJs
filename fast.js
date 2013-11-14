@@ -528,12 +528,8 @@
 	// Handler get two arguments - object key and value
 	// "this" in handler references to value
 	f.each = function(object, handler) {
-		var length = object.length,
-			i = 0;
-
-		// Check length for undefined
-		// if object is an empty array, then length is a 0
-		if(length !== undefined) {
+		if(_isArray(object)) {
+			var length = object.length, i = 0;
 			for(; i < length; i++) {
 				if(handler.call(object[i], i, object[i]) === false) {
 					break;
@@ -541,7 +537,7 @@
 			}
 		}
 		else {
-			for(i in object) {
+			for(var i in object) {
 				if(handler.call(object[i], i, object[i]) === false) {
 					break;
 				}
