@@ -1439,9 +1439,9 @@
 		if(f.isObject(settings.data) && !settings.dataFile) {
 			var params = '';
 			for(var key in settings.data) {
-				params += encodeURIComponent(key) + '=' + encodeURIComponent(settings.data[key]);
+				params += encodeURIComponent(key) + '=' + encodeURIComponent(settings.data[key]) + '&';
 			}
-			settings.data = params;
+			settings.data = (params.substr(-1) === '&' ? params.slice(0, -1) : params);
 		}
 
 		// Here data is additional GET params
