@@ -2,7 +2,7 @@
  * FastJs JavaScript Framework v1.0.2
  * http://fastjs.net
  *
- * Copyright 2013. Released under the Creative Commons (CC) license
+ * Copyright 2013. Released under the MIT license
  * http://fastjs.net/license
  *
  * Author: Kadir A. Fuzaylov
