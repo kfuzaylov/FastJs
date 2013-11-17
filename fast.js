@@ -1,5 +1,5 @@
 /*
- * FastJs JavaScript Framework v1.0.2
+ * FastJs JavaScript Framework v1.0.3
  * http://fastjs.net
  *
  * Copyright 2013. Released under the MIT license
@@ -7,6 +7,7 @@
  *
  * Author: Kadir A. Fuzaylov
  */
+
 (function(window, undefined) {
 	'use strict';
 
@@ -247,6 +248,12 @@
 	};
 
 	//------------ Events -------------
+	var _eventsType = {
+		HTMLEvents: ['load', 'unload', 'submit', 'change', 'error', 'readystatechange', 'reset', 'search', 'selectstart', 'message', 'online', 'offline', 'focus', 'blur'],
+		MouseEvents: ['click', 'contextmenu', 'dblclick', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'mousewheel'],
+		UIEvents: ['resize', 'scroll', 'select', 'keyup', 'keydown', 'keypress']
+	};
+
 	function _attachEvent(element, type, selector, handler) {
 		// Return if element is text or comment node
 		if(element.nodeType == 3 || element.nodeType == 8 || !type || !handler) {
@@ -511,7 +518,7 @@
 	window.addEventListener('load', _triggerReadyCallback, false);
 
 	// Current version of FastJs
-	f.version = '1.0.2';
+	f.version = '1.0.3';
 
 	// Set browser info to browser property
 	f.browser = _detectBrowser();
@@ -1320,6 +1327,10 @@
 	};
 
 	f.trigger = function(element, event) {
+		if(!f.isString(event)) {
+			return;
+		}
+
 		if(typeof element === 'string') {
 			element = f(element);
 		}
@@ -1329,29 +1340,20 @@
 
 		for(; i < length; i++) {
 			elem = element[i];
-			// Trigger events only for element nodes
-			if(elem.nodeType === 1 && event) {
-				event = f.event(event, {target: elem});
-				if(elem.handle) {
-					elem.handle.call(elem, event);
-				}
 
-				// Check if parent node delegated events handler
-				while(elem = elem.parentNode) {
-					var events = elem.events;
-					if(!events) {
-						continue;
-					}
-					if(events.live && events.live[event.type]) {
-						for(var id in events.live[event.type]) {
-							if(f(events.live[event.type][id].selector)[0] === element[0]) {
-								elem.liveHandler.call(elem, event);
-							}
-						}
-					}
-					if(events[event.type]) {
-						elem.handle.call(elem, event);
-					}
+			if(event === 'click') {
+				elem.click();
+				continue;
+			}
+
+			// Trigger events only for element nodes
+			if(elem.nodeType === 1) {
+				var eventObj = f.event(event);
+				if(document.createEvent || typeof CustomEvent !== 'undefined') {
+					elem.dispatchEvent(eventObj);
+				}
+				else {
+					elem.fireEvent('on' + event, eventObj);
 				}
 			}
 		}
@@ -1359,35 +1361,23 @@
 	};
 
 	f.event = function(type, props) {
-		// Check if type is event object
-		if(type && type.type) {
-			return type;
+		var event;
+		if(typeof CustomEvent !== 'underfined') {
+			event = new CustomEvent(type, {cancelable: true, bubbles: true, detail: props || undefined});
 		}
-
-		var event = new function() {
-			this.type = type;
-			this.timeStamp = +new Date();
-			this.ctrlKey = false;
-			this.altKey = false;
-			this.metaKey = false;
-			this.shiftKey = false;
-			this.isDefaultPrevented = _returnFalse;
-			this.isPropagationStopped = _returnFalse;
-			this.isImmediatePropagationStopped = _returnFalse;
-			this.preventDefault = function() {
-				this.isDefaultPrevented = _returnTrue;
-			},
-				this.stopPropagation = function() {
-					this.isPropagationStopped = _returnTrue;
-				},
-				this.stopImmediatePropagation = function() {
-					this.isImmediatePropagationStopped = _returnTrue;
-				}
-		}
-
-		// Extend object with passed properties
-		if(props) {
-			f.merge(event, props);
+		else {
+			if(document.createEvent) {
+				f.each(_eventsType, function(key, types) {
+					if(types.indexOf(type) !== -1) {
+						event = document.createEvent(key);
+						return false;
+					}
+				});
+				event.initEvent(type, true, true);
+			}
+			else if(document.createEventObject) {
+				event = document.createEventObject();
+			}
 		}
 		return event;
 	};
