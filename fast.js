@@ -1341,12 +1341,6 @@
 		for(; i < length; i++) {
 			elem = element[i];
 
-			// Prefer this kind of trigger, because eg. click opens dialog window
-			if(event[event]) {
-				elem[event]();
-				continue;
-			}
-
 			// Trigger events only for element nodes
 			if(elem.nodeType === 1) {
 				var eventObj = f.event(event);
