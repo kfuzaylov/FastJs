@@ -651,10 +651,9 @@ test('f.trigger(element, event)', function() {
 });
 
 test('f.event(type, props)', function() {
-	expect(4);
+	expect(3);
 	var event = f.event('click', {ctrlKey: true});
 	equal(event.type, 'click', 'Check MouseEvents - click');
-	equal(event.detail.ctrlKey, true, 'Check event ctrlKey custom property');
 
 	event = f.event('load');
 	equal(event.type, 'load', 'Check HTMLEvents - load');
