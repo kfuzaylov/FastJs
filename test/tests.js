@@ -651,13 +651,16 @@ test('f.trigger(element, event)', function() {
 });
 
 test('f.event(type, props)', function() {
-	expect(3);
-	var event = f.event(null, {ctrlKey: true, type: 'mouseover'});
-	equal(event.type, 'mouseover', 'Check custom event type property');
-	equal(event.ctrlKey, true, 'Check custom event ctrlKey property');
+	expect(4);
+	var event = f.event('click', {ctrlKey: true});
+	equal(event.type, 'click', 'Check MouseEvents - click');
+	equal(event.detail.ctrlKey, true, 'Check event ctrlKey custom property');
 
-	event = f.event({type: 'click', shiftKey: true});
-	equal(event.type, 'click', 'Check method return real event property');
+	event = f.event('load');
+	equal(event.type, 'load', 'Check HTMLEvents - load');
+
+	event = f.event('resize');
+	equal(event.type, 'resize', 'Check UIEvents - resize');
 });
 
 module('AJAX');
@@ -906,7 +909,7 @@ asyncTest('f.ajax(settings) - Upload progress callback', 1, function() {
 			}
 		});
 	});
-	file[0].click();
+	f.trigger(file, 'click');
 });
 
 asyncTest('f.ajax(settings) - Download progress callback', 1, function() {
