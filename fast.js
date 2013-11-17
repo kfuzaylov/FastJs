@@ -545,7 +545,7 @@
 		}
 		else {
 			for(var i in object) {
-				if(handler.call(object[i], i, object[i]) === false) {
+				if(object.hasOwnProperty(i) && handler.call(object[i], i, object[i]) === false) {
 					break;
 				}
 			}
@@ -1341,8 +1341,9 @@
 		for(; i < length; i++) {
 			elem = element[i];
 
-			if(event === 'click') {
-				elem.click();
+			// Prefer this kind of trigger, because eg. click opens dialog window
+			if(event[event]) {
+				elem[event]();
 				continue;
 			}
 
@@ -1360,24 +1361,19 @@
 		return element;
 	};
 
-	f.event = function(type, props) {
+	f.event = function(type) {
 		var event;
-		if(typeof CustomEvent !== 'underfined') {
-			event = new CustomEvent(type, {cancelable: true, bubbles: true, detail: props || undefined});
+		if(document.createEvent) {
+			f.each(_eventsType, function(key, types) {
+				if(types.indexOf(type) !== -1) {
+					event = document.createEvent(key);
+					return false;
+				}
+			});
+			event.initEvent(type, true, true);
 		}
-		else {
-			if(document.createEvent) {
-				f.each(_eventsType, function(key, types) {
-					if(types.indexOf(type) !== -1) {
-						event = document.createEvent(key);
-						return false;
-					}
-				});
-				event.initEvent(type, true, true);
-			}
-			else if(document.createEventObject) {
-				event = document.createEventObject();
-			}
+		else if(document.createEventObject) {
+			event = document.createEventObject();
 		}
 		return event;
 	};
