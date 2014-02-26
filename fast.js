@@ -14,6 +14,7 @@
 	// Quick references to window properties
 	var document = window.document;
 
+	// Link to User agent
 	var userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
