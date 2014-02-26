@@ -12,9 +12,9 @@
 	'use strict';
 
 	// Quick references to window properties
-	var document = window.document,
+	var document = window.document;
 
-		userAgent = window.navigator.userAgent,
+	var userAgent = window.navigator.userAgent,
 
 	// Flag not to run dom ready callbacks twice
 		_domReady = false,
